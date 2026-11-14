@@ -1,0 +1,850 @@
+# Fenestra Menu 11 — Chinese (Traditional) translation
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Machine-assisted translation — to be reviewed by a native speaker.
+msgid ""
+msgstr "Project-Id-Version: Fenestra Menu 11 1.0\nReport-Msgid-Bugs-To: https://github.com/naykkalak/fenestra-menu-11/issues\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nLanguage: zh_TW\nPlural-Forms: nplurals=1; plural=0;\n"
+
+#: contents/ui/ConfigGeneral.qml:75
+msgid "Icon:"
+msgstr "圖示："
+
+#: contents/ui/ConfigGeneral.qml:155
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "選擇…"
+
+#: contents/ui/ConfigGeneral.qml:160
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "清除圖示"
+
+#: contents/ui/ConfigGeneral.qml:176
+msgid "Apps icon size:"
+msgstr "應用程式圖示大小："
+
+#: contents/ui/ConfigGeneral.qml:178 contents/ui/ConfigGeneral.qml:185
+msgid "Small"
+msgstr "小"
+
+#: contents/ui/ConfigGeneral.qml:178 contents/ui/ConfigGeneral.qml:185
+msgid "Medium"
+msgstr "中"
+
+#: contents/ui/ConfigGeneral.qml:178 contents/ui/ConfigGeneral.qml:185
+msgid "Large"
+msgstr "大"
+
+#: contents/ui/ConfigGeneral.qml:178 contents/ui/ConfigGeneral.qml:185
+msgid "Huge"
+msgstr "特大"
+
+#: contents/ui/ConfigGeneral.qml:183
+msgid "Docs icon size:"
+msgstr "文件圖示大小："
+
+#: contents/ui/ConfigGeneral.qml:191
+msgid "Menu position"
+msgstr "功能表位置"
+
+#: contents/ui/ConfigGeneral.qml:194
+msgid "Default"
+msgstr "預設"
+
+#: contents/ui/ConfigGeneral.qml:195
+msgid "Center"
+msgstr "置中"
+
+#: contents/ui/ConfigGeneral.qml:196
+msgid "Center bottom"
+msgstr "置中靠下"
+
+#: contents/ui/ConfigGeneral.qml:204
+msgid "Show labels in two lines"
+msgstr "以兩行顯示名稱"
+
+#: contents/ui/ConfigGeneral.qml:214
+msgid "Number of columns"
+msgstr "欄數"
+
+#: contents/ui/ConfigGeneral.qml:222
+msgid "Number of rows"
+msgstr "列數"
+
+#: contents/ui/ConfigGeneral.qml:227
+msgid "All Apps"
+msgstr "所有應用程式"
+
+#: contents/ui/ConfigGeneral.qml:232
+msgid "Recent Documents:"
+msgstr "最近的文件："
+
+#: contents/ui/ConfigGeneral.qml:233
+msgid "Show Recent Documents section"
+msgstr "顯示「最近的文件」區段"
+
+#: contents/ui/ConfigGeneral.qml:239
+msgid "KDE Connect"
+msgstr "KDE Connect"
+
+#: contents/ui/ConfigGeneral.qml:244
+msgid "Mobile panel:"
+msgstr "手機面板："
+
+#: contents/ui/ConfigGeneral.qml:245
+msgid "Keep the mobile panel open between menu openings"
+msgstr "在開啟功能表之間保持手機面板開啟"
+
+#: contents/ui/ConfigGeneral.qml:250 contents/ui/KdeConnectPanel.qml:959
+msgid "Search"
+msgstr "搜尋"
+
+#: contents/ui/ConfigGeneral.qml:255
+msgid "Home page:"
+msgstr "首頁："
+
+#: contents/ui/ConfigGeneral.qml:256
+msgid "Show recently opened apps"
+msgstr "顯示最近開啟的應用程式"
+
+#: contents/ui/ConfigGeneral.qml:261
+msgid "Enable shell command runner ( > cmd )"
+msgstr "啟用 Shell 命令執行器 ( > cmd )"
+
+#: contents/ui/ConfigGeneral.qml:266
+msgid "Show Quick Actions bar (Screenshot, Lock, Terminal…)"
+msgstr "顯示快速動作列（螢幕擷取、鎖定、終端機…）"
+
+#: contents/ui/ConfigGeneral.qml:271
+msgid "Footer power buttons"
+msgstr "頁尾電源按鈕"
+
+#: contents/ui/ConfigGeneral.qml:276
+msgid "Show:"
+msgstr "顯示："
+
+#: contents/ui/ConfigGeneral.qml:277
+msgid "Sleep / Suspend"
+msgstr "睡眠"
+
+#: contents/ui/ConfigGeneral.qml:282 contents/ui/Footer.qml:767
+msgid "Restart"
+msgstr "重新啟動"
+
+#: contents/ui/ConfigGeneral.qml:287
+msgid "Shutdown"
+msgstr "關機"
+
+#: contents/ui/ConfigGeneral.qml:294
+msgid "Unhide all hidden applications"
+msgstr "重新顯示所有隱藏的應用程式"
+
+#: contents/ui/ConfigGeneral.qml:297
+msgid "Unhidden!"
+msgstr "已顯示！"
+
+#: contents/ui/Footer.qml:290
+msgid "Sign out"
+msgstr "登出"
+
+#: contents/ui/Footer.qml:388
+msgid "Other users"
+msgstr "其他使用者"
+
+#: contents/ui/Footer.qml:486
+msgid "No other users"
+msgstr "沒有其他使用者"
+
+#: contents/ui/Footer.qml:550
+msgid "Local account"
+msgstr "本機帳戶"
+
+#: contents/ui/Footer.qml:558
+msgid "Manage my account"
+msgstr "管理我的帳戶"
+
+#: contents/ui/Footer.qml:636
+msgid "Power"
+msgstr "電源"
+
+#: contents/ui/Footer.qml:683
+msgid "Lock"
+msgstr "鎖定"
+
+#: contents/ui/Footer.qml:711
+msgid "Sleep"
+msgstr "睡眠"
+
+#: contents/ui/Footer.qml:739
+msgid "Shut down"
+msgstr "關機"
+
+#: contents/ui/ItemGridDelegate.qml:195
+msgid "New"
+msgstr "新增"
+
+#: contents/ui/ItemGridDelegateColumns.qml:243
+msgid "Unpin from Start"
+msgstr "從「開始」取消釘選"
+
+#: contents/ui/ItemGridDelegateColumns.qml:243
+msgid "Pin to Start"
+msgstr "釘選到「開始」"
+
+#: contents/ui/KdeConnectPanel.qml:178
+msgid "The phone is ringing…"
+msgstr "手機正在響鈴…"
+
+#: contents/ui/KdeConnectPanel.qml:179
+msgid "Hello from the PC"
+msgstr "來自電腦的問候"
+
+#: contents/ui/KdeConnectPanel.qml:179
+msgid "Ping sent"
+msgstr "已傳送 Ping"
+
+#: contents/ui/KdeConnectPanel.qml:180
+msgid "Clipboard sent"
+msgstr "已傳送剪貼簿"
+
+#: contents/ui/KdeConnectPanel.qml:188
+msgid "Opening the phone's files…"
+msgstr "正在開啟手機的檔案…"
+
+#: contents/ui/KdeConnectPanel.qml:198
+msgid "File sent"
+msgid_plural "%1 files sent"
+msgstr[0] "已傳送 %1 個檔案"
+
+#: contents/ui/KdeConnectPanel.qml:207
+msgid "Link sent: it opens on the phone"
+msgstr "已傳送連結：將在手機上開啟"
+
+#: contents/ui/KdeConnectPanel.qml:210
+msgid "Text sent"
+msgstr "已傳送文字"
+
+#: contents/ui/KdeConnectPanel.qml:227
+msgid "Take the photo on the phone: it will open here."
+msgstr "請在手機上拍照：照片將在此處開啟。"
+
+#: contents/ui/KdeConnectPanel.qml:328
+msgid "Reply sent"
+msgstr "已傳送回覆"
+
+#: contents/ui/KdeConnectPanel.qml:401
+msgid "Choose a contact from the list or type a number"
+msgstr "請從清單選擇聯絡人，或輸入號碼"
+
+#: contents/ui/KdeConnectPanel.qml:405
+msgid "Sending SMS…"
+msgstr "正在傳送簡訊…"
+
+#: contents/ui/KdeConnectPanel.qml:796
+msgid "Send to phone"
+msgstr "傳送到手機"
+
+#: contents/ui/KdeConnectPanel.qml:831
+msgid "✓ SMS handed over to the phone"
+msgstr "✓ 簡訊已交給手機"
+
+#: contents/ui/KdeConnectPanel.qml:836
+msgid "✗ Failed: SMS not handed over to the phone"
+msgstr "✗ 失敗：簡訊未交給手機"
+
+#: contents/ui/KdeConnectPanel.qml:884
+msgid "Access your mobile device here"
+msgstr "在此存取您的行動裝置"
+
+#: contents/ui/KdeConnectPanel.qml:894
+msgid "The qdbus tool was not found: unable to talk to KDE Connect."
+msgstr "找不到 qdbus 工具：無法與 KDE Connect 通訊。"
+
+#: contents/ui/KdeConnectPanel.qml:895
+msgid "See your phone's battery, files and notifications right in the Start menu, thanks to KDE Connect."
+msgstr "透過 KDE Connect，直接在「開始」功能表中查看手機的電量、檔案和通知。"
+
+#: contents/ui/KdeConnectPanel.qml:901
+msgid "Select your device"
+msgstr "選取您的裝置"
+
+#: contents/ui/KdeConnectPanel.qml:924
+msgid "Connect an iPhone"
+msgstr "連接 iPhone"
+
+#: contents/ui/KdeConnectPanel.qml:924
+msgid "Connect an Android phone"
+msgstr "連接 Android 手機"
+
+#: contents/ui/KdeConnectPanel.qml:936
+msgid "1. Install the KDE Connect app from the App Store.\n"
+msgstr "1. 從 App Store 安裝 KDE Connect 應用程式。\n"
+
+#: contents/ui/KdeConnectPanel.qml:937
+msgid "1. Install the KDE Connect app from the Play Store or F-Droid.\n"
+msgstr "1. 從 Play 商店或 F-Droid 安裝 KDE Connect 應用程式。\n"
+
+#: contents/ui/KdeConnectPanel.qml:938
+msgid "2. Connect the phone to the same Wi-Fi network as this PC (or connect this PC to the phone's hotspot).\n"
+msgstr "2. 將手機連線到與這台電腦相同的 Wi-Fi 網路（或將這台電腦連線到手機的無線基地台）。\n"
+
+#: contents/ui/KdeConnectPanel.qml:939
+msgid "3. In the app, tap the name of this PC, then “Request pairing”.\n"
+msgstr "3. 在應用程式中點選這台電腦的名稱，然後點選「要求配對」。\n"
+
+#: contents/ui/KdeConnectPanel.qml:940
+msgid "4. Accept the request that appears on this PC."
+msgstr "4. 接受這台電腦上出現的要求。"
+
+#: contents/ui/KdeConnectPanel.qml:946
+msgid "On iPhone, KDE Connect offers fewer features than on Android."
+msgstr "在 iPhone 上，KDE Connect 的功能比 Android 少。"
+
+#: contents/ui/KdeConnectPanel.qml:954
+msgid "Download"
+msgstr "下載"
+
+#: contents/ui/KdeConnectPanel.qml:967
+msgid "< Back"
+msgstr "< 返回"
+
+#: contents/ui/KdeConnectPanel.qml:1024
+msgid "Connected"
+msgstr "已連線"
+
+#: contents/ui/KdeConnectPanel.qml:1024
+msgid "Offline"
+msgstr "離線"
+
+#: contents/ui/KdeConnectPanel.qml:1081
+msgid "Refresh"
+msgstr "重新整理"
+
+#: contents/ui/KdeConnectPanel.qml:1101
+msgid "Ring"
+msgstr "響鈴"
+
+#: contents/ui/KdeConnectPanel.qml:1102
+msgid "Send files"
+msgstr "傳送檔案"
+
+#: contents/ui/KdeConnectPanel.qml:1103
+msgid "Browse"
+msgstr "瀏覽"
+
+#: contents/ui/KdeConnectPanel.qml:1104
+msgid "Clipboard"
+msgstr "剪貼簿"
+
+#: contents/ui/KdeConnectPanel.qml:1105
+msgid "Send a link"
+msgstr "傳送連結"
+
+#: contents/ui/KdeConnectPanel.qml:1106
+msgid "Take a photo"
+msgstr "拍照"
+
+#: contents/ui/KdeConnectPanel.qml:1107
+msgid "SMS"
+msgstr "簡訊"
+
+#: contents/ui/KdeConnectPanel.qml:1108
+msgid "Ping"
+msgstr "Ping"
+
+#: contents/ui/KdeConnectPanel.qml:1109 contents/ui/MenuRepresentation.qml:2449
+msgid "Settings"
+msgstr "設定"
+
+#: contents/ui/KdeConnectPanel.qml:1123
+msgid "To: %1"
+msgstr "收件者：%1"
+
+#: contents/ui/KdeConnectPanel.qml:1130
+msgid "Name or number"
+msgstr "姓名或號碼"
+
+#: contents/ui/KdeConnectPanel.qml:1130
+msgid "Phone number"
+msgstr "電話號碼"
+
+#: contents/ui/KdeConnectPanel.qml:1212
+msgid "Message"
+msgstr "訊息"
+
+#: contents/ui/KdeConnectPanel.qml:1231 contents/ui/KdeConnectPanel.qml:1261 contents/ui/MenuRepresentation.qml:3666 contents/ui/MenuRepresentation.qml:3791 contents/ui/MenuRepresentation.qml:4066 contents/ui/MenuRepresentation.qml:4141
+msgid "Cancel"
+msgstr "取消"
+
+#: contents/ui/KdeConnectPanel.qml:1235 contents/ui/KdeConnectPanel.qml:1265
+msgid "Send"
+msgstr "傳送"
+
+#: contents/ui/KdeConnectPanel.qml:1253
+msgid "Web link or text to send"
+msgstr "要傳送的網頁連結或文字"
+
+#: contents/ui/KdeConnectPanel.qml:1441
+msgid "The phone is offline: check that it is on the same network."
+msgstr "手機已離線：請確認它位於同一個網路。"
+
+#: contents/ui/KdeConnectPanel.qml:1460
+msgid "Recent notifications"
+msgstr "最近的通知"
+
+#: contents/ui/KdeConnectPanel.qml:1548
+msgid "Reply"
+msgstr "回覆"
+
+#: contents/ui/KdeConnectPanel.qml:1561
+msgid "Your reply"
+msgstr "您的回覆"
+
+#: contents/ui/KdeConnectPanel.qml:1578
+msgid "Dismiss notification"
+msgstr "關閉通知"
+
+#: contents/ui/KdeConnectPanel.qml:1625
+msgid "More options"
+msgstr "更多選項"
+
+#: contents/ui/KdeConnectPanel.qml:1659
+msgid "Open KDE Connect"
+msgstr "開啟 KDE Connect"
+
+#: contents/ui/KdeConnectPanel.qml:1671
+msgid "Hide this panel"
+msgstr "隱藏此面板"
+
+#: contents/ui/MenuRepresentation.qml:411
+msgid "Good morning"
+msgstr "早安"
+
+#: contents/ui/MenuRepresentation.qml:412
+msgid "Good afternoon"
+msgstr "午安"
+
+#: contents/ui/MenuRepresentation.qml:413
+msgid "Good evening"
+msgstr "晚安"
+
+#: contents/ui/MenuRepresentation.qml:559
+msgid "%1 app"
+msgid_plural "%1 apps"
+msgstr[0] "%1 個應用程式"
+
+#: contents/ui/MenuRepresentation.qml:781
+msgid "Sunday"
+msgstr "星期日"
+
+#: contents/ui/MenuRepresentation.qml:781
+msgid "Monday"
+msgstr "星期一"
+
+#: contents/ui/MenuRepresentation.qml:781
+msgid "Tuesday"
+msgstr "星期二"
+
+#: contents/ui/MenuRepresentation.qml:782
+msgid "Wednesday"
+msgstr "星期三"
+
+#: contents/ui/MenuRepresentation.qml:782
+msgid "Thursday"
+msgstr "星期四"
+
+#: contents/ui/MenuRepresentation.qml:782
+msgid "Friday"
+msgstr "星期五"
+
+#: contents/ui/MenuRepresentation.qml:782
+msgid "Saturday"
+msgstr "星期六"
+
+#: contents/ui/MenuRepresentation.qml:785
+msgid "%1 night session"
+msgstr "%1夜間"
+
+#: contents/ui/MenuRepresentation.qml:786
+msgid "%1 morning picks"
+msgstr "%1上午精選"
+
+#: contents/ui/MenuRepresentation.qml:787
+msgid "%1 afternoon picks"
+msgstr "%1下午精選"
+
+#: contents/ui/MenuRepresentation.qml:788
+msgid "%1 evening picks"
+msgstr "%1晚間精選"
+
+#: contents/ui/MenuRepresentation.qml:797
+msgid "Your top picks"
+msgstr "您的常用應用程式"
+
+#: contents/ui/MenuRepresentation.qml:798
+msgid "Frequently used"
+msgstr "經常使用"
+
+#: contents/ui/MenuRepresentation.qml:801
+msgid "Your morning session"
+msgstr "您的早晨時光"
+
+#: contents/ui/MenuRepresentation.qml:802
+msgid "Good morning apps"
+msgstr "早晨應用程式"
+
+#: contents/ui/MenuRepresentation.qml:803
+msgid "Midday picks"
+msgstr "中午精選"
+
+#: contents/ui/MenuRepresentation.qml:804
+msgid "Afternoon session"
+msgstr "下午時段"
+
+#: contents/ui/MenuRepresentation.qml:805
+msgid "Evening apps"
+msgstr "晚間應用程式"
+
+#: contents/ui/MenuRepresentation.qml:806
+msgid "Late night"
+msgstr "深夜"
+
+#: contents/ui/MenuRepresentation.qml:811
+msgid "Lock the screen"
+msgstr "鎖定螢幕"
+
+#: contents/ui/MenuRepresentation.qml:812
+msgid "Suspend to RAM"
+msgstr "睡眠"
+
+#: contents/ui/MenuRepresentation.qml:813
+msgid "Restart the computer"
+msgstr "重新啟動電腦"
+
+#: contents/ui/MenuRepresentation.qml:814
+msgid "Shut down the computer"
+msgstr "關閉電腦"
+
+#: contents/ui/MenuRepresentation.qml:815
+msgid "Take a screenshot"
+msgstr "擷取螢幕畫面"
+
+#: contents/ui/MenuRepresentation.qml:816
+msgid "Open System Settings"
+msgstr "開啟系統設定"
+
+#: contents/ui/MenuRepresentation.qml:817
+msgid "Open file manager"
+msgstr "開啟檔案管理員"
+
+#: contents/ui/MenuRepresentation.qml:818
+msgid "Open a terminal"
+msgstr "開啟終端機"
+
+#: contents/ui/MenuRepresentation.qml:819
+msgid "Log out"
+msgstr "登出"
+
+#: contents/ui/MenuRepresentation.qml:842
+msgid "Search the web for \"%1\""
+msgstr "在網路上搜尋「%1」"
+
+#: contents/ui/MenuRepresentation.qml:843
+msgid "Opens default browser"
+msgstr "開啟預設瀏覽器"
+
+#: contents/ui/MenuRepresentation.qml:944
+msgid "today at %1"
+msgstr "今天 %1"
+
+#: contents/ui/MenuRepresentation.qml:945
+msgid "yesterday at %1"
+msgstr "昨天 %1"
+
+#: contents/ui/MenuRepresentation.qml:946
+msgid "%1 at %2"
+msgstr "%1 %2"
+
+#: contents/ui/MenuRepresentation.qml:955
+msgid "Just now"
+msgstr "剛剛"
+
+#: contents/ui/MenuRepresentation.qml:956
+msgid "%1 min ago"
+msgstr "%1 分鐘前"
+
+#: contents/ui/MenuRepresentation.qml:957
+msgid "%1 h ago"
+msgstr "%1 小時前"
+
+#: contents/ui/MenuRepresentation.qml:1207
+msgid "New application"
+msgstr "新應用程式"
+
+#: contents/ui/MenuRepresentation.qml:1208
+msgid "%1 is installed — filed under “%2”"
+msgstr "已安裝 %1 — 歸類於「%2」"
+
+#: contents/ui/MenuRepresentation.qml:1211
+msgid "%1 new application"
+msgid_plural "%1 new applications"
+msgstr[0] "%1 個新應用程式"
+
+#: contents/ui/MenuRepresentation.qml:1317
+msgid "Search for apps, settings and documents"
+msgstr "搜尋應用程式、設定和文件"
+
+#: contents/ui/MenuRepresentation.qml:1575
+msgid "Screenshot"
+msgstr "螢幕擷取"
+
+#: contents/ui/MenuRepresentation.qml:1576
+msgid "Lock Screen"
+msgstr "鎖定螢幕"
+
+#: contents/ui/MenuRepresentation.qml:1577
+msgid "Open Terminal"
+msgstr "開啟終端機"
+
+#: contents/ui/MenuRepresentation.qml:1578
+msgid "Open Files"
+msgstr "開啟檔案"
+
+#: contents/ui/MenuRepresentation.qml:1579
+msgid "Calculator"
+msgstr "計算機"
+
+#: contents/ui/MenuRepresentation.qml:1580
+msgid "System Settings"
+msgstr "系統設定"
+
+#: contents/ui/MenuRepresentation.qml:1716
+msgid "Pinned"
+msgstr "已釘選"
+
+#: contents/ui/MenuRepresentation.qml:1729
+msgid "Show more"
+msgstr "顯示更多"
+
+#: contents/ui/MenuRepresentation.qml:1729
+msgid "Show less"
+msgstr "顯示較少"
+
+#: contents/ui/MenuRepresentation.qml:2151 contents/ui/MenuRepresentation.qml:2940
+msgid "Recommended"
+msgstr "建議"
+
+#: contents/ui/MenuRepresentation.qml:2164
+msgid "Show all"
+msgstr "顯示全部"
+
+#: contents/ui/MenuRepresentation.qml:2272 contents/ui/MenuRepresentation.qml:2446
+msgid "All"
+msgstr "全部"
+
+#: contents/ui/MenuRepresentation.qml:2281
+msgid "View: %1"
+msgstr "檢視：%1"
+
+#: contents/ui/MenuRepresentation.qml:2281 contents/ui/MenuRepresentation.qml:3067
+msgid "List"
+msgstr "清單"
+
+#: contents/ui/MenuRepresentation.qml:2281 contents/ui/MenuRepresentation.qml:3066
+msgid "Grid"
+msgstr "格狀"
+
+#: contents/ui/MenuRepresentation.qml:2281 contents/ui/MenuRepresentation.qml:3065
+msgid "Categories"
+msgstr "類別"
+
+#: contents/ui/MenuRepresentation.qml:2447
+msgid "Apps"
+msgstr "應用程式"
+
+#: contents/ui/MenuRepresentation.qml:2448
+msgid "Files"
+msgstr "檔案"
+
+#: contents/ui/MenuRepresentation.qml:2450
+msgid "Actions"
+msgstr "動作"
+
+#: contents/ui/MenuRepresentation.qml:2627
+msgid "Enter or click to copy result"
+msgstr "按 Enter 或點選以複製結果"
+
+#: contents/ui/MenuRepresentation.qml:2651
+msgid "Type a command  ·  ↓ navigate  ·  /calc expr  ·  Enter run"
+msgstr "輸入命令  ·  ↓ 瀏覽  ·  /calc 運算式  ·  Enter 執行"
+
+#: contents/ui/MenuRepresentation.qml:2762
+msgid "Alt+1–9 to launch"
+msgstr "Alt+1–9 啟動"
+
+#: contents/ui/MenuRepresentation.qml:2905
+msgid "Press Enter to run: %1"
+msgstr "按 Enter 執行：%1"
+
+#: contents/ui/MenuRepresentation.qml:2906
+msgid "Type a shell command after '>'"
+msgstr "在「>」之後輸入 Shell 命令"
+
+#: contents/ui/MenuRepresentation.qml:2909
+msgid "No results for \"%1\" in %2"
+msgstr "在 %2 中找不到「%1」的結果"
+
+#: contents/ui/MenuRepresentation.qml:2912
+msgid "No results for \"%1\""
+msgstr "找不到「%1」的結果"
+
+#: contents/ui/MenuRepresentation.qml:2950
+msgid "Back"
+msgstr "返回"
+
+#: contents/ui/MenuRepresentation.qml:2997
+msgid "No recent documents this week"
+msgstr "本週沒有最近的文件"
+
+#: contents/ui/MenuRepresentation.qml:3552 contents/ui/MenuRepresentation.qml:4038
+msgid "New folder"
+msgstr "新增資料夾"
+
+#: contents/ui/MenuRepresentation.qml:3561 contents/ui/MenuRepresentation.qml:4047
+msgid "Folder name"
+msgstr "資料夾名稱"
+
+#: contents/ui/MenuRepresentation.qml:3565
+msgid "Choose from pinned apps:"
+msgstr "從已釘選的應用程式中選擇："
+
+#: contents/ui/MenuRepresentation.qml:3671 contents/ui/MenuRepresentation.qml:4071
+msgid "Create"
+msgstr "建立"
+
+#: contents/ui/MenuRepresentation.qml:3697 contents/ui/MenuRepresentation.qml:3981
+msgid "Rename folder"
+msgstr "重新命名資料夾"
+
+#: contents/ui/MenuRepresentation.qml:3711 contents/ui/MenuRepresentation.qml:3995
+msgid "Delete folder"
+msgstr "刪除資料夾"
+
+#: contents/ui/MenuRepresentation.qml:3722
+msgid "Unpin all apps in folder"
+msgstr "取消釘選資料夾中的所有應用程式"
+
+#: contents/ui/MenuRepresentation.qml:3774 contents/ui/MenuRepresentation.qml:4124
+msgid "Rename Folder"
+msgstr "重新命名資料夾"
+
+#: contents/ui/MenuRepresentation.qml:3796
+msgid "Save"
+msgstr "儲存"
+
+#: contents/ui/MenuRepresentation.qml:3966
+msgid "Drag apps here to add them"
+msgstr "將應用程式拖曳到此處以新增"
+
+#: contents/ui/MenuRepresentation.qml:4055
+msgid "Drag apps from the list into this folder to add them."
+msgstr "將應用程式從清單拖曳到此資料夾以新增。"
+
+#: contents/ui/MenuRepresentation.qml:4146
+msgid "Rename"
+msgstr "重新命名"
+
+#: contents/ui/MenuRepresentation.qml:4269
+msgid "Add apps — %1"
+msgstr "新增應用程式 — %1"
+
+#: contents/ui/MenuRepresentation.qml:4270
+msgid "Add apps to folder"
+msgstr "將應用程式新增到資料夾"
+
+#: contents/ui/MenuRepresentation.qml:4280
+msgid "Filter…"
+msgstr "篩選…"
+
+#: contents/ui/RecentDocDelegate.qml:48
+msgid "Home Folder"
+msgstr "主資料夾"
+
+#: contents/ui/main.qml:255
+msgid "Edit Applications…"
+msgstr "編輯應用程式…"
+
+#: contents/ui/code/tools.js:44
+msgid "Remove from Favorites"
+msgstr "從我的最愛移除"
+
+#: contents/ui/code/tools.js:48
+msgid "Add to Favorites"
+msgstr "加入我的最愛"
+
+#: contents/ui/code/tools.js:72
+msgid "On All Activities"
+msgstr "在所有活動中"
+
+#: contents/ui/code/tools.js:122
+msgid "On the Current Activity"
+msgstr "在目前的活動中"
+
+#: contents/ui/code/tools.js:136
+msgid "Show in Favorites"
+msgstr "顯示在我的最愛中"
+
+#: contents/config/config.qml:26
+msgid "General"
+msgstr "一般"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Version %1"
+msgstr "版本 %1"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Part of the Fenestra series, which gives KDE Plasma the look of a Windows 11 desktop."
+msgstr "屬於 Fenestra 系列，為 KDE Plasma 帶來 Windows 11 桌面的外觀。"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Author: %1"
+msgstr "作者：%1"
+
+#: contents/ui/AProposFenetre.qml
+msgid "License: %1"
+msgstr "授權：%1"
+
+#: contents/ui/AProposFenetre.qml
+msgid "GPL-3.0 or later"
+msgstr "GPL-3.0 或更新版本"
+
+#: contents/ui/AProposFenetre.qml
+msgid "This software is neither affiliated with nor endorsed by Microsoft Corporation. Windows is a trademark of Microsoft Corporation."
+msgstr "本軟體與 Microsoft Corporation 無關，也未獲其認可。Windows 是 Microsoft Corporation 的商標。"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Close"
+msgstr "關閉"
+
+#: contents/ui/AProposFenetre.qml
+msgid "About Fenestra Menu 11"
+msgstr "關於 Fenestra Menu 11"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Based on Menu 11 Next by Eisteed and on Menu 11 by adhe (GPL-2.0 or later)."
+msgstr "基於 Eisteed 的 Menu 11 Next 和 adhe 的 Menu 11（GPL-2.0 或更新版本）。"
+
+#: contents/ui/AProposFenetre.qml
+msgid "Mobile panel and power icons: Fluent UI System Icons, © Microsoft Corporation, MIT license."
+msgstr "行動面板與電源圖示：Fluent UI System Icons，© Microsoft Corporation，MIT 授權。"
+
+msgid "Hibernate"
+msgstr "休眠"
+
+msgid "Hibernate (if available)"
+msgstr "休眠（如可用）"
+
+msgid "Web search"
+msgstr "網路搜尋"
+
+msgid "Search “%1” on %2"
+msgstr "在 %2 上搜尋「%1」"
