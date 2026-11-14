@@ -50,7 +50,7 @@ It brings your pinned and recommended apps, all your apps in three views, a sear
 
 ### From the KDE Store
 
-Right-click the panel → **Add or Manage Widgets** → **Get New Widgets** → search for **Fenestra Menu 11**.
+Right-click the panel → **Add or Manage Widgets** → **Get New Widgets** → search for **Fenestra Menu 11**. Updates then arrive through Discover.
 
 ### Manual
 
