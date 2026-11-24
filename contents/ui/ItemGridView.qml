@@ -37,8 +37,8 @@ FocusScope {
     property bool showLabels: true
     property bool labels2lines: false
     property bool showNewTag: false
-    // liste de favoris à utiliser pour le clic droit à la place de celle du modèle
-    // (null par défaut : aucun changement pour les grilles qui fonctionnent déjà)
+    // favorites list to use for the right-click, instead of the model's own
+    // (null by default: no change for the grids that already work)
     property var favoritesModelOverride: null
     property int itemColumns
 
@@ -58,17 +58,17 @@ FocusScope {
     property var horizontalScrollBarPolicy: PlasmaComponents.ScrollBar.AlwaysOff
     property var verticalScrollBarPolicy: PlasmaComponents.ScrollBar.AlwaysOff
     property bool bypassArrowNav: false
-    // lignes des recommandations (icône + nom + « date · dossier », infobulle chemin complet)
+    // recommendation rows (icon + name + "date · folder", tooltip with the full path)
     property bool recentDocsMode: false
-    // surlignement blanc 50 % + bordure (sinon bleu d'origine)
+    // white 50% highlight + border (otherwise the original blue)
     property bool whiteHighlight: false
-    // Fenestra : surlignement de Fenestra Search (résultats de la recherche)
+    // Fenestra: Fenestra Search highlight (search results)
     property bool surlignageSearch: false
-    // raccourcit le surlignement à droite (px)
+    // shortens the highlight on the right (px)
     property int highlightRightPad: 0
-    // version pleine largeur (page « Nos recommandations ») : heure à droite, chemin sous le nom
+    // full-width version ("Our recommendations" page): time on the right, path under the name
     property bool recentDocsWide: false
-    // instant de la dernière touche de navigation (sert à ignorer les « sorties de souris » dues au défilement)
+    // time of the last navigation key press (used to ignore "mouse exits" caused by scrolling)
     function _keyNavRecently() {
         return typeof rootItem !== "undefined" && rootItem.keyNavRecently();
     }
@@ -240,7 +240,7 @@ FocusScope {
             id: aItemGridDelegate2
             ItemGridDelegateColumns {
                 showLabel: showLabels
-                compact: itemGrid.surlignageSearch   // Fenestra : lignes de Fenestra Search
+                compact: itemGrid.surlignageSearch   // Fenestra: Fenestra Search rows
                 labels2lines: itemGrid.labels2lines
                 itemColumns: itemGrid.itemColumns
                 iconSize: itemGrid.iconSize
@@ -275,30 +275,30 @@ FocusScope {
             focus: true
 
             PlasmaComponents.ScrollBar.horizontal.policy: itemGrid.horizontalScrollBarPolicy
-            PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {   // 2.0 : même ascenseur que la page principale et la recherche (façon Windows 11)
+            PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {   // 2.0: same scroll bar as the main page and the search (Windows 11 style)
                 id: barreFenestra
                 parent: scrollArea
                 x: scrollArea.mirrored ? 0 : scrollArea.width - width
                 y: scrollArea.topPadding
                 height: scrollArea.availableHeight
                 policy: itemGrid.verticalScrollBarPolicy
-                implicitWidth: 14   // largeur d'origine de la barre du thème
+                implicitWidth: 14   // original width of the theme's bar
                 hoverEnabled: true
                 visible: size < 1.0 && policy !== PlasmaComponents.ScrollBar.AlwaysOff
                 readonly property bool survol: hovered || pressed
                 readonly property bool eveille: active || extinction.running
-                function reveil() { extinction.restart(); }   // appelée quand la souris bouge
+                function reveil() { extinction.restart(); }   // called when the mouse moves
                 Timer { id: extinction; interval: 1500 }
-                background: KSvg.FrameSvgItem {   // survol : fond du thème
+                background: KSvg.FrameSvgItem {   // hover: theme background
                     imagePath: "widgets/scrollbar"
                     prefix: "background-vertical"
-                    transform: Translate { x: 4 }   // collé au bord, comme Windows
+                    transform: Translate { x: 4 }   // stuck to the edge, like Windows
                     opacity: barreFenestra.survol ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: 150 } }
                 }
                 contentItem: Item {
                     implicitWidth: 14
-                    Rectangle {   // souris qui bouge : trait fin côté bord
+                    Rectangle {   // mouse moving: thin line on the edge side
                         anchors.right: parent.right
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
@@ -310,11 +310,11 @@ FocusScope {
                         opacity: (barreFenestra.eveille && !barreFenestra.survol) ? 0.55 : 0
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
-                    KSvg.FrameSvgItem {   // survol / glissement : poignée du thème
+                    KSvg.FrameSvgItem {   // hover / drag: theme handle
                         anchors.fill: parent
                         imagePath: "widgets/scrollbar"
                         prefix: "mouseover-slider"
-                        transform: Translate { x: 4 }   // collé au bord, comme Windows
+                        transform: Translate { x: 4 }   // stuck to the edge, like Windows
                         opacity: barreFenestra.survol ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
@@ -323,9 +323,9 @@ FocusScope {
 
             GridView {
                 id: gridView
-                HoverHandler { onPointChanged: barreFenestra.reveil() }   // 2.0 : réveil de la barre quand la souris bouge sur la liste
+                HoverHandler { onPointChanged: barreFenestra.reveil() }   // 2.0: wakes the bar when the mouse moves over the list
 
-                // transmet la liste de favoris imposée à l'enveloppe (itemGrid), pour le clic droit
+                // passes the imposed favorites list to the wrapper (itemGrid), for the right-click
                 property var favoritesModelOverride: itemGrid.favoritesModelOverride
 
                 width:  itemGrid.width                
@@ -377,9 +377,9 @@ FocusScope {
                 keyNavigationWraps: false
                 boundsBehavior: Flickable.StopAtBounds
 
-                // Molette (souris) : le GridView avalerait la molette même sans rien à faire
-                // défiler ; on défile la grille à la main et, en bout de liste, on relaie
-                // au défilement du menu (signal wheelUnhandled).
+                // Wheel (mouse): the GridView would swallow the wheel even with nothing to
+                // scroll; so we scroll the grid by hand and, at the end of the list, relay
+                // to the menu's scrolling (wheelUnhandled signal).
                 WheelHandler {
                     id: wheelForward
                     target: null
@@ -404,15 +404,15 @@ FocusScope {
                     Rectangle {
                         anchors.fill: parent
                         anchors.rightMargin: itemGrid.highlightRightPad
-                        anchors.topMargin: itemGrid.surlignageSearch ? 2 : 0   // Fenestra : 4 px entre les lignes
+                        anchors.topMargin: itemGrid.surlignageSearch ? 2 : 0   // Fenestra: 4 px between the rows
                         anchors.bottomMargin: itemGrid.surlignageSearch ? 2 : 0
-                        color: (itemGrid.surlignageSearch || itemGrid.whiteHighlight) ? (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0 : même survol partout
+                        color: (itemGrid.surlignageSearch || itemGrid.whiteHighlight) ? (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0: same hover everywhere
                         : Qt.rgba(Kirigami.Theme.highlightColor.r,
                         Kirigami.Theme.highlightColor.g,
                         Kirigami.Theme.highlightColor.b, 0.18)
                         border.width: (itemGrid.whiteHighlight || itemGrid.surlignageSearch) ? 1 : 0
-                        border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")   // 2.0 : même survol partout
-                        radius: (itemGrid.surlignageSearch || itemGrid.whiteHighlight) ? 5 : 6   // 2.0 : même survol partout
+                        border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")   // 2.0: same hover everywhere
+                        radius: (itemGrid.surlignageSearch || itemGrid.whiteHighlight) ? 5 : 6   // 2.0: same hover everywhere
                     }
                 }
 
@@ -487,8 +487,8 @@ FocusScope {
 
                 onItemContainsMouseChanged: containsMouse => {
                                                 if (!containsMouse) {
-                                                    // le défilement au clavier fait sortir l'élément du curseur immobile :
-                                                    // on garde alors la sélection au clavier
+                                                    // keyboard scrolling moves the item out from under the motionless cursor:
+                                                    // so we keep the keyboard selection
                                                     if (itemGrid._keyNavRecently()) {
                                                         return;
                                                     }
@@ -612,7 +612,7 @@ FocusScope {
 
                                     itemGrid.itemActivated(pressedItem.itemIndex, "", null);
                                 }
-                                // Fenestra : clic dans le vide sans fermeture (le menu d'origine se fermait ici)
+                                // Fenestra: click on empty space without closing (the original menu closed here)
                             }
 
                             pressX = pressY = -1;
@@ -620,7 +620,7 @@ FocusScope {
                         }
 
             onPositionChanged: mouse => {
-                                   // le défilement (clavier) fait « bouger » la souris immobile : on ignore ces événements
+                                   // keyboard scrolling makes the motionless mouse "move": we ignore those events
                                    if (pressedItem === null && itemGrid._keyNavRecently()) {
                                        return;
                                    }

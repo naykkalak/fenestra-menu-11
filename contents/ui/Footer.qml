@@ -36,8 +36,8 @@ RowLayout{
 
     signal tabOut
 
-    // ferme les fenêtres du pied (Compte, autres comptes, Alimentation) ;
-    // appelée par MenuRepresentation.qml quand le menu se ferme
+    // closes the footer's windows (Account, other accounts, Power);
+    // called by MenuRepresentation.qml when the menu closes
     function closeMenus() {
         usersMenu.visible = false;
         accountMenu.visible = false;
@@ -56,7 +56,7 @@ RowLayout{
         id: sessionManager
     }
 
-    // ── Lanceur de commande shell (ex: ouvrir les Paramètres système)
+    // ── Shell command launcher (e.g. open System Settings)
     Plasma5Support.DataSource {
         id: runner
         engine: "executable"
@@ -64,9 +64,9 @@ RowLayout{
         function run(cmd) { connectSource(cmd) }
     }
 
-    // ── Liste des autres comptes locaux (uid >= 1000, hors utilisateur courant
-    // et hors comptes sans shell de connexion) - relue à chaque ouverture du
-    // popup "Autres utilisateurs" via refresh()
+    // ── List of the other local accounts (uid >= 1000, excluding the current user
+    // and accounts without a login shell) - re-read each time the
+    // "Other users" popup opens, via refresh()
     Plasma5Support.DataSource {
         id: usersCheck
         engine: "executable"
@@ -75,9 +75,9 @@ RowLayout{
         Component.onCompleted: refresh()
         readonly property string cmd: "getent passwd | awk -F: -v OFS='|' '$3>=1000 && $3<60000 && $7!~/nologin|false/ {print $1,$5}'"
 
-        // Chaque refresh utilise une source légèrement différente (commentaire
-        // shell horodaté, ignoré à l'exécution) pour empêcher le moteur
-        // "executable" de resservir l'ancienne réponse mise en cache.
+        // Each refresh uses a slightly different source (a timestamped
+        // shell comment, ignored at execution) to stop the "executable"
+        // engine from serving the old cached answer again.
         property string currentSource: ""
 
         function refresh() {
@@ -107,12 +107,12 @@ RowLayout{
         }
     }
 
-    // ── Bouton "Compte" - avatar + nom. Ouvre la fenêtre Compte
-    // (logo distribution, avatar, nom, type de compte, liens).
+    // ── "Account" button - avatar + name. Opens the Account window
+    // (distribution logo, avatar, name, account type, links).
     //
-    // Pour éviter que le menu principal se referme quand cette fenêtre
-    // prend le focus, les deux signaux ci-dessous doivent être connectés
-    // dans MenuRepresentation.qml :
+    // To keep the main menu from closing when this window
+    // takes focus, the two signals below must be connected
+    // in MenuRepresentation.qml:
     //   onAccountMenuAboutToOpen: root.hideOnWindowDeactivate = false
     //   onAccountMenuClosed:      root.hideOnWindowDeactivate = true
     signal accountMenuAboutToOpen
@@ -120,11 +120,11 @@ RowLayout{
 
     Item {
         id: accountButton
-        // cadre-compte-v1 : même style que le bouton Alimentation
+        // account-frame-v1: same style as the Power button
         implicitWidth: userInfoRow.implicitWidth + 20
         implicitHeight: userInfoRow.implicitHeight + 8
         Layout.alignment: Qt.AlignVCenter
-        Layout.leftMargin: 15 // cadre-compte-v2 : 25 - 10 (le cadre déborde, l'avatar reste en place)
+        Layout.leftMargin: 15 // account-frame-v2: 25 - 10 (the frame overflows, the avatar stays in place)
 
         Rectangle {
             anchors.fill: parent
@@ -156,7 +156,7 @@ RowLayout{
                         if (faceUrl !== "") {
                             return faceUrl
                         }
-                        return Qt.resolvedUrl("../icons/status/fenestra-avatar.svg")   // Fenestra 1.1 : avatar par défaut
+                        return Qt.resolvedUrl("../icons/status/fenestra-avatar.svg")   // Fenestra 1.1: default avatar
                     }
                     cache: false
                     visible: false
@@ -182,7 +182,7 @@ RowLayout{
             }
 
             Text {
-                Layout.leftMargin: 5   // Fenestra : nom écarté de l'avatar
+                Layout.leftMargin: 5   // Fenestra: name set apart from the avatar
                 wrapMode: Text.NoWrap
                 color: Kirigami.Theme.textColor
                 font: Kirigami.Theme.defaultFont
@@ -218,10 +218,10 @@ RowLayout{
             }
 
             function reposition() {
-                // Centré horizontalement sur le bouton, ouvert vers le HAUT :
-                // le bouton Compte est dans la même barre du bas que le
-                // bouton Alimentation, tout en bas de l'écran, donc il n'y a
-                // de place que vers le haut (comme pour le menu Alimentation).
+                // Centered horizontally on the button, opens UPWARDS:
+                // the Account button is in the same bottom bar as the
+                // Power button, at the very bottom of the screen, so there is
+                // room only upwards (as for the Power menu).
                 var pos = accountButton.mapToGlobal(accountButton.width / 2, 0);
                 x = Math.round(pos.x - width / 2);
                 y = Math.round(pos.y - height - Kirigami.Units.smallSpacing);
@@ -231,7 +231,7 @@ RowLayout{
                 width: 340
                 spacing: Kirigami.Units.largeSpacing
 
-                // ── Ligne du haut : logo distro à gauche, "Se déconnecter" à droite
+                // ── Top row: distro logo on the left, "Sign out" on the right
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.leftMargin: Kirigami.Units.smallSpacing + 6
@@ -241,8 +241,8 @@ RowLayout{
                     Image {
                         id: distroLogo
                         property bool primaryFailed: false
-                        // Fenestra 1.1 : aucun logo de distribution n'est chargé (élément gardé vide)
-                        source: Qt.resolvedUrl("../icons/fenestra-logo.svg")   // 2.0 : logo Fenestra
+                        // Fenestra 1.1: no distribution logo is loaded (element kept empty)
+                        source: Qt.resolvedUrl("../icons/fenestra-logo.svg")   // 2.0: Fenestra logo
                         visible: true
                         onStatusChanged: {
                             if (status === Image.Error && !primaryFailed) {
@@ -254,10 +254,10 @@ RowLayout{
                         Layout.preferredWidth: 20
                         Layout.alignment: Qt.AlignVCenter
                         sourceSize.width: 20 * Screen.devicePixelRatio
-                        sourceSize.height: 20 * Screen.devicePixelRatio   // 2.0 : bords nets, comme « Ce PC »
+                        sourceSize.height: 20 * Screen.devicePixelRatio   // 2.0: sharp edges, like "This PC"
                     }
 
-                    Text {   // 2.0 : nom du thème, à côté du logo
+                    Text {   // 2.0: theme name, next to the logo
                         text: "Fenestra theme"
                         color: Kirigami.Theme.textColor
                         opacity: 0.8
@@ -275,8 +275,12 @@ RowLayout{
                         implicitWidth: logoutLabel.implicitWidth + 20
                         implicitHeight: logoutLabel.implicitHeight + 12
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? Qt.rgba(1, 1, 1, logoutMouse.containsMouse ? 0.07 : 0.0) : Qt.rgba(0, 0, 0, logoutMouse.containsMouse ? 0.07 : 0.0))
+                        // 2.1: same highlight as the "Shut down" row of the Power menu
+                        color: logoutMouse.containsMouse ? (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") : "#00ffffff"
+                        border.width: 1
+                        border.color: logoutMouse.containsMouse ? (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000") : (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#00ffffff" : "#00000000")
                         Behavior on color { ColorAnimation { duration: 100 } }
+                        Behavior on border.color { ColorAnimation { duration: 100 } }
 
                         Text {
                             id: logoutLabel
@@ -299,7 +303,7 @@ RowLayout{
                         }
                     }
 
-                    // ── Bouton "..." (trois petits points) - action : verrouiller la session
+                    // ── "..." button (three small dots) - action: lock the session
                     Rectangle {
                         id: moreButton
                         Layout.alignment: Qt.AlignVCenter
@@ -336,15 +340,15 @@ RowLayout{
                                     return;
                                 }
                                 usersCheck.refresh();
-                                // Empêche la fenêtre Compte de se fermer quand
-                                // le popup prend le focus
+                                // Keeps the Account window from closing when
+                                // the popup takes focus
                                 accountMenu.hideOnWindowDeactivate = false;
                                 usersMenu.visible = true;
                             }
                         }
 
-                        // ── Popup "Autres utilisateurs" - petite fenêtre
-                        // système séparée, placée SOUS le bouton "..."
+                        // ── "Other users" popup - small separate
+                        // system window, placed BELOW the "..." button
                         PlasmaCore.Dialog {
                             id: usersMenu
                             flags: Qt.WindowStaysOnTopHint
@@ -363,8 +367,8 @@ RowLayout{
                             }
 
                             function reposition() {
-                                // Bord gauche aligné sur le bouton "...",
-                                // juste en dessous de lui
+                                // Left edge aligned with the "..." button,
+                                // right below it
                                 var pos = moreButton.mapToGlobal(0, moreButton.height);
                                 x = Math.round(pos.x);
                                 y = Math.round(pos.y + Kirigami.Units.smallSpacing);
@@ -419,7 +423,7 @@ RowLayout{
                                                     property bool failed: false
                                                     anchors.fill: parent
                                                     source: failed
-                                                        ? Qt.resolvedUrl("../icons/status/fenestra-avatar.svg")   // Fenestra 1.1 : avatar par défaut
+                                                        ? Qt.resolvedUrl("../icons/status/fenestra-avatar.svg")   // Fenestra 1.1: default avatar
                                                         : ("file:///var/lib/AccountsService/icons/" + modelData.login)
                                                     onStatusChanged: {
                                                         if (status === Image.Error && !failed) {
@@ -461,8 +465,8 @@ RowLayout{
                                         onClicked: {
                                             accountMenu.visible = false;
                                             usersMenu.visible = false;
-                                            // Ouvre le changement d'utilisateur
-                                            // (écran de connexion)
+                                            // Opens the user switcher
+                                            // (login screen)
                                             if (typeof sessionManager.switchUser === "function") {
                                                 sessionManager.switchUser();
                                             } else {
@@ -487,7 +491,7 @@ RowLayout{
                     }
                 }
 
-                // ── Avatar + nom + type de compte + lien
+                // ── Avatar + name + account type + link
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.leftMargin: Kirigami.Units.smallSpacing + 6
@@ -536,13 +540,13 @@ RowLayout{
                             text: qsTr(kuser.fullName)
                             color: Kirigami.Theme.textColor
                             font.family: Kirigami.Theme.defaultFont.family
-                            font.bold: true
+                            font.weight: Font.DemiBold
                             font.pointSize: (Kirigami.Theme.defaultFont.pointSize || 10) + 3
                         }
 
                         Text {
                             text: i18n("Local account")
-                            color: Kirigami.Theme.disabledTextColor
+                            color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#5D595F" : Kirigami.Theme.disabledTextColor
                             font.family: Kirigami.Theme.defaultFont.family
                             font.pointSize: Kirigami.Theme.defaultFont.pointSize || 10
                         }
@@ -550,7 +554,8 @@ RowLayout{
                         Text {
                             id: manageLink
                             text: i18n("Manage my account")
-                            color: Kirigami.Theme.linkColor
+                            // Fenestra blue in light theme, Plasma link colour in dark theme
+                            color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#003E92" : Kirigami.Theme.linkColor
                             font.family: Kirigami.Theme.defaultFont.family
                             font.pointSize: Kirigami.Theme.defaultFont.pointSize || 10
                             font.underline: manageMouse.containsMouse
@@ -577,15 +582,15 @@ RowLayout{
         Layout.fillWidth: true
     }
 
-    // ── Bouton "Alimentation" unique - ouvre une fenêtre système séparée
-    // (PlasmaCore.Dialog), pas un Popup intégré, pour pouvoir rester
-    // parfaitement centrée sur le bouton même si elle dépasse les limites
-    // de la fenêtre principale du menu (qui, elle, ne peut pas afficher de
-    // contenu hors de ses propres bords).
+    // ── Single "Power" button - opens a separate system window
+    // (PlasmaCore.Dialog), not an embedded Popup, so that it can stay
+    // perfectly centered on the button even if it exceeds the limits
+    // of the main menu window (which cannot display
+    // content outside its own edges).
     //
-    // Pour éviter que le menu principal se referme quand cette seconde
-    // fenêtre prend le focus (hideOnWindowDeactivate en cascade), les deux
-    // signaux ci-dessous doivent être connectés dans MenuRepresentation.qml :
+    // To keep the main menu from closing when this second
+    // window takes focus (hideOnWindowDeactivate cascading), the two
+    // signals below must be connected in MenuRepresentation.qml:
     //   onPowerMenuAboutToOpen: root.hideOnWindowDeactivate = false
     //   onPowerMenuClosed:      root.hideOnWindowDeactivate = true
     signal powerMenuAboutToOpen
@@ -595,11 +600,11 @@ RowLayout{
         id: powerButton
         icon.width: 22
         icon.height: 22
-        icon.source: Qt.resolvedUrl("../icons/status/system-shutdown-v2.svg")   // Fenestra : icône d'alimentation du widget
-        Layout.rightMargin: 27 // 20 + 5 + 2 points supplémentaires
-        // cadre-alimentation-v1 : carré de la hauteur du bloc utilisateur,
-        // même style que les boutons d'applis de la barre des tâches
-        Layout.preferredWidth: accountButton.implicitHeight - 3   // Fenestra : cadre Alimentation réduit
+        icon.source: Qt.resolvedUrl("../icons/status/system-shutdown-v2.svg")   // Fenestra: widget power icon
+        Layout.rightMargin: 27 // 20 + 5 + 2 extra points
+        // power-frame-v1: square the height of the user block,
+        // same style as the taskbar's app buttons
+        Layout.preferredWidth: accountButton.implicitHeight - 3   // Fenestra: reduced Power frame
         Layout.preferredHeight: accountButton.implicitHeight - 3
         Layout.alignment: Qt.AlignVCenter
         background: Rectangle {
@@ -610,7 +615,7 @@ RowLayout{
             opacity: (powerButton.hovered || powerButton.down || powerMenu.visible) ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 100 } }
         }
-        // enfoncement-alimentation-v1 : l'icône s'enfonce au clic (comme le bouton Démarrer)
+        // power-press-v1: the icon sinks on click (like the Start button)
         contentItem: Item {
             implicitWidth: powerButton.icon.width
             implicitHeight: powerButton.icon.height
@@ -620,13 +625,13 @@ RowLayout{
                 height: powerButton.icon.height
                 source: powerButton.icon.source
                 active: false
-                isMask: true   // couleur du texte du thème
+                isMask: true   // theme text color
                 color: Kirigami.Theme.textColor
                 scale: powerButton.down ? 0.85 : 1.0
                 Behavior on scale { NumberAnimation { duration: 100 } }
             }
         }
-        PlasmaComponents3.ToolTip.delay: 400   // 2.0 : comme les autres infobulles (reste tant que la souris est sur le bouton)
+        PlasmaComponents3.ToolTip.delay: 400   // 2.0: like the other tooltips (stays as long as the mouse is on the button)
         PlasmaComponents3.ToolTip.visible: hovered && !powerMenu.visible
         PlasmaComponents3.ToolTip.text: i18n("Power")
         visible: sessionManager.canLock || sessionManager.canSuspend || sessionManager.canHibernate === true || sessionManager.canReboot || sessionManager.canShutdown
@@ -636,7 +641,7 @@ RowLayout{
             powerMenu.visible = true;
         }
 
-        // alimentation-recreee (2.0) : « powerMenu » devient un simple interrupteur ; la fenêtre est recréée à chaque ouverture
+        // power-recreated (2.0): "powerMenu" becomes a simple switch; the window is recreated on every opening
         QtObject {
             id: powerMenu
             property bool visible: false
@@ -661,10 +666,10 @@ RowLayout{
             }
 
             function reposition() {
-                // Centré horizontalement sur le bouton, ouvert vers le haut.
-                // Fenêtre système distincte : peut déborder librement du
-                // cadre du menu principal si elle s'élargit, sans jamais
-                // être tronquée.
+                // Centered horizontally on the button, opens upwards.
+                // Separate system window: it can freely overflow the
+                // main menu's frame if it grows wider, without ever
+                // being truncated.
                 var pos = powerButton.mapToGlobal(powerButton.width / 2, 0);
                 x = Math.round(pos.x - width / 2);
                 y = Math.round(pos.y - height - Kirigami.Units.smallSpacing);
@@ -684,8 +689,8 @@ RowLayout{
                     bottomPadding: Kirigami.Units.smallSpacing
                     icon.width: 22
                     icon.height: 22
-                    icon.source: Qt.resolvedUrl("../icons/status/system-lock-screen-v2.svg")   // Fenestra : icône d'alimentation du widget
-                    contentItem: RowLayout {   // icône à la couleur du texte du thème
+                    icon.source: Qt.resolvedUrl("../icons/status/system-lock-screen-v2.svg")   // Fenestra: widget power icon
+                    contentItem: RowLayout {   // icon in the theme's text color
                         spacing: parent ? parent.spacing : Kirigami.Units.smallSpacing + 6
                         Kirigami.Icon {
                             source: Qt.resolvedUrl("../icons/status/system-lock-screen-v2.svg")
@@ -705,8 +710,8 @@ RowLayout{
                         anchors.fill: parent
                         anchors.margins: 2
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-alim-v1
-                        border.width: 1                 // même bordure que les autres surlignements
+                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // power-highlight-v1
+                        border.width: 1                 // same border as the other highlights
                         border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                         opacity: parent.hovered ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -727,8 +732,8 @@ RowLayout{
                     bottomPadding: Kirigami.Units.smallSpacing
                     icon.width: 22
                     icon.height: 22
-                    icon.source: Qt.resolvedUrl("../icons/status/system-suspend-v2.svg")   // Fenestra : icône d'alimentation du widget
-                    contentItem: RowLayout {   // icône à la couleur du texte du thème
+                    icon.source: Qt.resolvedUrl("../icons/status/system-suspend-v2.svg")   // Fenestra: widget power icon
+                    contentItem: RowLayout {   // icon in the theme's text color
                         spacing: parent ? parent.spacing : Kirigami.Units.smallSpacing + 6
                         Kirigami.Icon {
                             source: Qt.resolvedUrl("../icons/status/system-suspend-v2.svg")
@@ -748,8 +753,8 @@ RowLayout{
                         anchors.fill: parent
                         anchors.margins: 2
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-alim-v1
-                        border.width: 1                 // même bordure que les autres surlignements
+                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // power-highlight-v1
+                        border.width: 1                 // same border as the other highlights
                         border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                         opacity: parent.hovered ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -761,7 +766,7 @@ RowLayout{
                 }
                 PlasmaComponents3.ItemDelegate {
                     Layout.fillWidth: true
-                    visible: sessionManager.canHibernate === true && Plasmoid.configuration.showHibernateButton   // 2.0 : seulement si le système sait hiberner
+                    visible: sessionManager.canHibernate === true && Plasmoid.configuration.showHibernateButton   // 2.0: only if the system can hibernate
                     hoverEnabled: true
                     spacing: Kirigami.Units.smallSpacing + 6
                     leftPadding: Kirigami.Units.smallSpacing + 6
@@ -770,8 +775,8 @@ RowLayout{
                     bottomPadding: Kirigami.Units.smallSpacing
                     icon.width: 22
                     icon.height: 22
-                    icon.source: Qt.resolvedUrl("../icons/status/system-hibernate-v2.svg")   // Fenestra : icône d'alimentation du widget
-                    contentItem: RowLayout {   // icône à la couleur du texte du thème
+                    icon.source: Qt.resolvedUrl("../icons/status/system-hibernate-v2.svg")   // Fenestra: widget power icon
+                    contentItem: RowLayout {   // icon in the theme's text color
                         spacing: parent ? parent.spacing : Kirigami.Units.smallSpacing + 6
                         Kirigami.Icon {
                             source: Qt.resolvedUrl("../icons/status/system-hibernate-v2.svg")
@@ -791,8 +796,8 @@ RowLayout{
                         anchors.fill: parent
                         anchors.margins: 2
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-alim-v1
-                        border.width: 1                 // même bordure que les autres surlignements
+                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // power-highlight-v1
+                        border.width: 1                 // same border as the other highlights
                         border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                         opacity: parent.hovered ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -813,8 +818,8 @@ RowLayout{
                     bottomPadding: Kirigami.Units.smallSpacing
                     icon.width: 22
                     icon.height: 22
-                    icon.source: Qt.resolvedUrl("../icons/status/system-shutdown-v2.svg")   // Fenestra : icône d'alimentation du widget
-                    contentItem: RowLayout {   // icône à la couleur du texte du thème
+                    icon.source: Qt.resolvedUrl("../icons/status/system-shutdown-v2.svg")   // Fenestra: widget power icon
+                    contentItem: RowLayout {   // icon in the theme's text color
                         spacing: parent ? parent.spacing : Kirigami.Units.smallSpacing + 6
                         Kirigami.Icon {
                             source: Qt.resolvedUrl("../icons/status/system-shutdown-v2.svg")
@@ -834,8 +839,8 @@ RowLayout{
                         anchors.fill: parent
                         anchors.margins: 2
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-alim-v1
-                        border.width: 1                 // même bordure que les autres surlignements
+                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // power-highlight-v1
+                        border.width: 1                 // same border as the other highlights
                         border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                         opacity: parent.hovered ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -856,8 +861,8 @@ RowLayout{
                     bottomPadding: Kirigami.Units.smallSpacing
                     icon.width: 22
                     icon.height: 22
-                    icon.source: Qt.resolvedUrl("../icons/status/system-reboot-v2.svg")   // Fenestra : icône d'alimentation du widget
-                    contentItem: RowLayout {   // icône à la couleur du texte du thème
+                    icon.source: Qt.resolvedUrl("../icons/status/system-reboot-v2.svg")   // Fenestra: widget power icon
+                    contentItem: RowLayout {   // icon in the theme's text color
                         spacing: parent ? parent.spacing : Kirigami.Units.smallSpacing + 6
                         Kirigami.Icon {
                             source: Qt.resolvedUrl("../icons/status/system-reboot-v2.svg")
@@ -877,8 +882,8 @@ RowLayout{
                         anchors.fill: parent
                         anchors.margins: 2
                         radius: Kirigami.Units.smallSpacing
-                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-alim-v1
-                        border.width: 1                 // même bordure que les autres surlignements
+                        color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // power-highlight-v1
+                        border.width: 1                 // same border as the other highlights
                         border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                         opacity: parent.hovered ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 100 } }

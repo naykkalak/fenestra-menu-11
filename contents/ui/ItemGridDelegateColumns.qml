@@ -46,7 +46,7 @@ Item {
 
     property int itemColumns
     property bool labels2lines: false
-    property bool compact: false   // Fenestra : lignes de Fenestra Search (recherche)
+    property bool compact: false   // Fenestra: Fenestra Search rows (search)
     Accessible.role: Accessible.MenuItem
     Accessible.name: model.display
 
@@ -174,7 +174,7 @@ Item {
         }
     }
 
-    // infobulle compacte (PC3.ToolTip), comme « Marche/Arrêt »
+    // compact tooltip (PC3.ToolTip), like "Shut down"
     Item {
         id: toolTip
 
@@ -233,7 +233,7 @@ Item {
     // Quick-pin button: appears on hover, absent for items without favoriteId
     Loader {
         id: pinButtonLoader
-        active: false   // fanion favori retiré (épinglage via clic droit)
+        active: false   // favorite flag removed (pinning via right-click)
         anchors.right: parent.right
         anchors.rightMargin: Kirigami.Units.largeSpacing
         anchors.verticalCenter: parent.verticalCenter

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 /*
-    Ligne « recommandation » : icône à gauche, nom, puis « date · dossier » ; infobulle avec le chemin complet.
-    Reprend l'interface de ItemGridDelegate.qml (utilisée par ItemGridView.qml).
+    "Recommendation" row: icon on the left, name, then "date · folder"; tooltip with the full path.
+    Reuses the interface of ItemGridDelegate.qml (used by ItemGridView.qml).
 */
 
 import QtQuick
@@ -44,16 +44,16 @@ Item {
     Accessible.role: Accessible.MenuItem
     Accessible.name: model.display
 
-    // texte affiché sous le nom : « date  ·  dossier » (la date est lue par MenuRepresentation, cf. docDates)
+    // text shown under the name: "date  ·  folder" (the date is read by MenuRepresentation, see docDates)
     property string dateText: (typeof rootItem !== "undefined" && rootItem.docDates)
                               ? (rootItem.docDates[String(model.url)] || "") : ""
     property string folderText: (model.description !== undefined && model.description !== null) ? String(model.description) : ""
     property string subtitle: (dateText !== "" && folderText !== "") ? (dateText + "  ·  " + folderText)
                                                                     : (dateText !== "" ? dateText : folderText)
-    // chemin complet pour l'infobulle
+    // full path for the tooltip
     property string fullPath: String(model.url).replace(/^file:\/\//, "").replace(/\/[^\/]*$/, "").replace(/^\/home\/[^\/]+/, i18n("Home Folder"))
 
-    // mode « page complète » : heure à droite, chemin sous le nom
+    // "full page" mode: time on the right, path under the name
     property bool wide: (typeof itemGrid !== "undefined") && itemGrid.recentDocsWide === true
     property real epoch: (typeof rootItem !== "undefined" && rootItem.docEpochs) ? (rootItem.docEpochs[String(model.url)] || 0) : 0
     property string timeText: epoch > 0 ? rootItem.formatRecentTime(epoch) : ""
@@ -134,7 +134,7 @@ Item {
         font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.9
     }
 
-    // infobulle compacte (PC3.ToolTip) : nom du document + chemin complet
+    // compact tooltip (PC3.ToolTip): document name + full path
     Item {
         id: toolTip
 

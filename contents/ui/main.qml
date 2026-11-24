@@ -276,10 +276,12 @@ PlasmoidItem {
         dragHelper.dropped.connect(resetDragSource);
     }
 
-    // « À propos » (1.2), ouvert depuis le « ··· » du volet KDE Connect
-    // le menu et le volet restent ouverts derrière ; à la fermeture, le menu reprend la main
+    // "About" (1.2), opened from the "···" of the KDE Connect panel
+    // the menu and the panel stay open behind it; when it closes, the menu takes control back
     property var voletAPropos: null
     function ouvrirAPropos(volet) { voletAPropos = volet || null; aPropos.ouvrir(); }
+    // 2.1: widget settings, opened from the "···" of the KDE Connect panel
+    function ouvrirReglages() { var a = Plasmoid.internalAction("configure"); if (a) a.trigger(); }
     AProposFenetre {
         id: aPropos
         onVisibleChanged: {
@@ -291,7 +293,7 @@ PlasmoidItem {
         }
     }
 
-    // 2.0 : « À propos » se ferme avec le volet KDE Connect et avec le menu
+    // 2.0: "About" closes together with the KDE Connect panel and the menu
     Connections {
         target: kicker.voletAPropos
         function onVisibleChanged() {

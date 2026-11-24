@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 /*
- * Fenestra Menu 11 — volet « Appareil mobile » (KDE Connect), façon Windows 11.
- * Fenêtre séparée collée au bord droit du menu (ou gauche si pas la place),
- * même hauteur que le menu. Ouverte/fermée par le bouton à droite de la recherche.
+ * Fenestra Menu 11 — "Mobile device" panel (KDE Connect), Windows 11 style.
+ * Separate window attached to the right edge of the menu (or the left if there is no room),
+ * same height as the menu. Opened/closed by the button to the right of the search.
  *
- * Étape 2 : actions (sonner, fichiers, parcourir, presse-papiers, SMS, ping).
- * Étape 1 : détection des appareils appairés, en-tête (nom, état, batterie),
- *           écran « aucun appareil » + guides Android / iPhone.
- * Les données passent par D-Bus (qdbus6 / qdbus-qt6 / qdbus), rien n'est écrit en dur.
+ * Step 2: actions (ring, files, browse, clipboard, SMS, ping).
+ * Step 1: detection of paired devices, header (name, state, battery),
+ *           "no device" screen + Android / iPhone guides.
+ * Data goes through D-Bus (qdbus6 / qdbus-qt6 / qdbus), nothing is hard-coded.
  */
 
 import QtQuick
@@ -19,37 +19,37 @@ import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Dialogs
 import QtQuick.Effects
-import QtCore   // StandardPaths (icône KDE Connect du thème)
+import QtCore   // StandardPaths (theme's KDE Connect icon)
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components as PC3
 import org.kde.plasma.plasma5support as P5Support
 import org.kde.kirigami as Kirigami
-import org.kde.ksvg as KSvg   // dessin d'infobulle du thème
+import org.kde.ksvg as KSvg   // theme tooltip drawing
 import org.kde.plasma.extras as PlasmaExtras
-import org.kde.plasma.plasmoid   // Fenestra : réglages du widget
+import org.kde.plasma.plasmoid   // Fenestra: widget settings
 
 PlasmaCore.Dialog {
     id: panel
 
-    // fenêtre du menu principal (renseignée par MenuRepresentation.qml)
+    // main menu window (set by MenuRepresentation.qml)
     property var menuWindow: null
 
     flags: Qt.WindowStaysOnTopHint
-    // posé sur le bord bas, comme le menu : pas de bordure ni d'arrondi en bas
-    location: PlasmaCore.Types.BottomEdge
+    // 2.1: like the menu, a "floating" window: four rounded corners
+    location: PlasmaCore.Types.Floating
     hideOnWindowDeactivate: false
     visible: false
 
-    // ── État ────────────────────────────────────────────────────────────────
+    // ── State ──────────────────────────────────────────────────────────────
     property var devices: []          // [{id, name, type, reachable, charge, charging}]
     property int current: 0
     property bool loaded: false
     property bool noQdbus: false
     property string page: "auto"      // "auto" | "android" | "iphone"
-    property bool busy: false         // sélecteur de fichiers ouvert : ne pas tout fermer
-    property bool hold: false          // une petite fenêtre du menu est ouverte : volet en pause
+    property bool busy: false         // file picker open: do not close everything
+    property bool hold: false          // a small menu window is open: panel on hold
     property bool smsOpen: false
-    property bool linkOpen: false        // formulaire « Envoyer un lien »
+    property bool linkOpen: false        // "Send a link" form
     property string toast: ""
     readonly property bool online: dev !== null && dev.reachable
     readonly property var dev: devices.length > 0 ? devices[Math.min(current, devices.length - 1)] : null
@@ -57,22 +57,22 @@ PlasmaCore.Dialog {
     readonly property bool hasMedia: online && dev.mTitle !== ""
     readonly property bool hasNetwork: online && dev.netType !== "" && dev.netStrength >= 0
 
-    // Fenestra : bouton interrupteur : l'état est gardé dans les réglages du widget
+    // Fenestra: toggle button: the state is kept in the widget settings
     function toggle() {
         Plasmoid.configuration.kdeConnectPanelOn = !visible;
         if (visible) close(); else open();
     }
-    // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+    // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
     property Item infoCible: null
     property string infoTexte: ""
     function infobulle(cible, texte) {
         if (texte === "") { if (infoCible === cible) { infoCible = null; infoTexte = ""; } return; }
         infoCible = cible; infoTexte = texte;
     }
-    // menu ouvert avec le volet actif : réouverture dès que le menu est actif
+    // menu opened with the panel active: reopens as soon as the menu is active
     property bool aRouvrir: false
-    property int retardOuverture: 0   // Fenestra : retard d'ouverture du volet (ms)
-    readonly property int recentrageVolet: 4   // Fenestra : recentrage du volet (px vers la gauche)
+    property int retardOuverture: 0   // Fenestra: panel opening delay (ms)
+    readonly property int recentrageVolet: 4   // Fenestra: panel recentering (px to the left)
     function rouvrirSiActif() {
         if (!aRouvrir || !menuWindow || !menuWindow.visible || visible) return;
         aRouvrir = false;
@@ -93,7 +93,7 @@ PlasmaCore.Dialog {
         refresh();
     }
 
-    // ferme le volet sans toucher au menu (une autre fenêtre du menu s'ouvre)
+    // closes the panel without touching the menu (another menu window opens)
     function closeQuiet() { plusMenu.visible = false; if (visible) visible = false; }
 
     function close() {
@@ -108,25 +108,25 @@ PlasmaCore.Dialog {
 
     onVisibleChanged: if (visible) Qt.callLater(reposition)
 
-    // Fermeture native du menu (hideOnWindowDeactivate) :
-    // coupée seulement quand la souris est sur le volet (pour pouvoir cliquer dedans),
-    // réactivée dès que la souris en sort ET que le menu est actif.
-    // C'est ce mécanisme natif qui détecte le clic sur la barre des tâches.
+    // Native menu closing (hideOnWindowDeactivate):
+    // disabled only while the mouse is over the panel (so that it can be clicked),
+    // re-enabled as soon as the mouse leaves it AND the menu is active.
+    // This native mechanism is what detects a click on the taskbar.
     function syncFlag() {
         if (!menuWindow || !visible) return;
-        // Fenestra : fermeture native coupée pendant le délai de grâce
+        // Fenestra: native closing disabled during the grace delay
         var natif = menuWindow.active && !voletHover.hovered && !busy && !hold && !graceVolet.running;
         if (menuWindow.hideOnWindowDeactivate !== natif)
             menuWindow.hideOnWindowDeactivate = natif;
     }
     onBusyChanged: syncFlag()
-    onHoldChanged: { if (!hold) graceVolet.restart(); syncFlag(); }   // Fenestra : délai de grâce après une petite fenêtre
+    onHoldChanged: { if (!hold) graceVolet.restart(); syncFlag(); }   // Fenestra: grace delay after a small window
 
     onActiveChanged: syncFlag()
 
-    // le volet rend le focus au menu juste APRÈS un clic (au relâchement) :
-    // jamais pendant, sinon le clic serait coupé en deux et perdu.
-    // Exceptions : saisie SMS et sélecteur de fichiers (besoin du clavier).
+    // the panel gives focus back to the menu right AFTER a click (on release):
+    // never during it, otherwise the click would be cut in two and lost.
+    // Exceptions: SMS input and file picker (they need the keyboard).
     function rendreFocus() {
         if (!active || !menuWindow || !menuWindow.visible) return;
         if (smsOpen || linkOpen || notifReplying !== "" || busy || hold) return;
@@ -136,7 +136,7 @@ PlasmaCore.Dialog {
     function reposition() {
         if (!menuWindow) return;
         var gap = Kirigami.Units.smallSpacing * 2;
-        // Fenestra : écran du menu (au 1er clic, le volet n'est pas encore sur le bon écran)
+        // Fenestra: menu's screen (on the 1st click, the panel is not yet on the right screen)
         var mi = menuWindow.mainItem;
         var ecran = (mi && mi.Screen.width > 0) ? mi.Screen : content.Screen;
         var ecranDroite = ecran.virtualX + ecran.width;
@@ -149,7 +149,7 @@ PlasmaCore.Dialog {
     }
 
 
-    // ── Lecture des appareils par D-Bus ─────────────────────────────────────
+    // ── Reading the devices over D-Bus ─────────────────────────────────────
     readonly property string readCmd:
         "sh -c 'Q=$(command -v qdbus6 || command -v qdbus-qt6 || command -v qdbus); " +
         "[ -n \"$Q\" ] || { echo NOQDBUS; exit 0; }; " +
@@ -160,7 +160,7 @@ PlasmaCore.Dialog {
         "r=$($Q $S $P/devices/$i org.kde.kdeconnect.device.isReachable 2>/dev/null); " +
         "c=$($Q $S $P/devices/$i/battery org.kde.kdeconnect.device.battery.charge 2>/dev/null); " +
         "g=$($Q $S $P/devices/$i/battery org.kde.kdeconnect.device.battery.isCharging 2>/dev/null); " +
-        // modules chargés (photo…), réseau mobile, musique en cours sur le téléphone
+        // loaded modules (photo…), mobile network, music playing on the phone
         "lp=$($Q $S $P/devices/$i org.kde.kdeconnect.device.loadedPlugins 2>/dev/null | tr \"\\n\" \",\"); " +
         "ct=$($Q $S $P/devices/$i/connectivity_report org.kde.kdeconnect.device.connectivity_report.cellularNetworkType 2>/dev/null); " +
         "cs=$($Q $S $P/devices/$i/connectivity_report org.kde.kdeconnect.device.connectivity_report.cellularNetworkStrength 2>/dev/null); " +
@@ -181,7 +181,7 @@ PlasmaCore.Dialog {
     function run(cmd)   { runner.connectSource(cmd + " #" + Date.now()); }
 
     // ── Actions ─────────────────────────────────────────────────────────────
-    // icônes Fluent UI (MIT) rangées dans le widget : contents/icons/kdeconnect/
+    // Fluent UI icons (MIT) stored in the widget: contents/icons/kdeconnect/
     function ico(n) { return Qt.resolvedUrl("../icons/kdeconnect/" + n + ".svg"); }
 
     function shq(t) { return "'" + String(t).replace(/'/g, "'\\''") + "'"; }
@@ -210,7 +210,7 @@ PlasmaCore.Dialog {
             run(cli("--share " + shq(urls[k].toString())));
         say(i18np("File sent", "%1 files sent", urls.length));
     }
-    // lien web -> ouvert sur le téléphone ; autre texte -> envoyé comme texte
+    // web link -> opened on the phone; other text -> sent as text
     function sendLink(texte) {
         var t = String(texte).trim();
         if (!online || t === "") return false;
@@ -225,8 +225,8 @@ PlasmaCore.Dialog {
         return true;
     }
 
-    // photo prise avec le téléphone, rangée dans Images/KDE Connect,
-    // puis ouverte sur le PC dès qu'elle arrive (attente jusqu'à 90 s)
+    // photo taken with the phone, stored in Pictures/KDE Connect,
+    // then opened on the PC as soon as it arrives (waits up to 90 s)
     function doPhoto() {
         if (!online || !hasPhoto) return;
         run("sh -c " + shq(
@@ -240,7 +240,7 @@ PlasmaCore.Dialog {
         say(i18n("Take the photo on the phone: it will open here."));
     }
 
-    // commandes multimédia : PlayPause, Next, Previous
+    // media commands: PlayPause, Next, Previous
     function media(action) {
         if (!hasMedia) return;
         run("sh -c " + shq(
@@ -251,7 +251,7 @@ PlasmaCore.Dialog {
 
     function doSettings() { run("kdeconnect-app"); }
 
-    // position du morceau (ms), avancée seconde par seconde entre deux lectures
+    // track position (ms), advanced second by second between two readings
     property real mediaPos: 0
     property real volAvantMuet: 40
     readonly property bool hasProgress: hasMedia && dev.mLength > 0
@@ -277,7 +277,7 @@ PlasmaCore.Dialog {
         mprisSet("position", Math.round(mediaPos));
     }
 
-    // Muet : volume du téléphone à 0 en retenant la valeur d'avant ; un second clic la rétablit
+    // Mute: phone volume set to 0 while remembering the previous value; a second click restores it
     function toggleMute() {
         if (!hasMedia || dev.mVolume < 0) return;
         if (dev.mVolume > 0) {
@@ -286,23 +286,23 @@ PlasmaCore.Dialog {
         } else {
             mprisSet("volume", Math.max(1, Math.round(volAvantMuet)));
         }
-        // relectures rapprochées : le téléphone met un instant à confirmer son nouveau volume
+        // close successive readings: the phone takes a moment to confirm its new volume
         run("sleep 0.7"); run("sleep 1.5"); run("sleep 2.5");
     }
 
-    // Le téléphone règle son volume par crans (souvent 15, soit ~6,7 %) et arrondit
-    // au cran le plus proche : un pas de 7 % fait franchir exactement un cran.
-    // L'affichage montre toujours la valeur RÉELLE du téléphone (relue juste après).
+    // The phone adjusts its volume in steps (often 15, i.e. ~6.7%) and rounds
+    // to the nearest step: a 7% increment crosses exactly one step.
+    // The display always shows the phone's REAL value (read back right afterwards).
     function volumeStep(delta) {
         if (!hasMedia || dev.mVolume < 0) return;
         mprisSet("volume", Math.max(0, Math.min(100, dev.mVolume + delta)));
     }
 
-    // ── Notifications du téléphone (miroir : rien n'est gardé sur le disque) ──
-    // lues avec busctl (un appel par notification) ; les notifications
-    // permanentes (non retirables : musique, services…) sont écartées
+    // ── Phone notifications (mirror: nothing is kept on disk) ──
+    // read with busctl (one call per notification); permanent
+    // notifications (cannot be removed: music, services…) are discarded
     property var notifs: []            // [{id, app, title, text, reply, icon}]
-    property string notifReplying: ""  // id de la notification à laquelle on répond
+    property string notifReplying: ""  // id of the notification being replied to
     readonly property bool hasNotifPlugin: online && dev.plugins.indexOf("kdeconnect_notifications") >= 0
 
     readonly property string lecteurNotifs: "import json, subprocess, sys\nbase = \"/modules/kdeconnect/devices/\" + sys.argv[1] + \"/notifications\"\ndef call(path, iface, method, *args):\n    try:\n        r = subprocess.run([\"busctl\", \"--user\", \"--json=short\", \"call\", \"org.kde.kdeconnect\",\n                            path, iface, method] + list(args), capture_output=True, text=True, timeout=5)\n        return json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else None\n    except Exception:\n        return None\nr = call(base, \"org.kde.kdeconnect.device.notifications\", \"activeNotifications\")\nids = r[\"data\"][0] if r else []\nout = []\nfor i in ids:\n    g = call(base + \"/\" + i, \"org.freedesktop.DBus.Properties\", \"GetAll\", \"s\",\n             \"org.kde.kdeconnect.device.notifications.notification\")\n    if not g:\n        continue\n    p = {k: v.get(\"data\") for k, v in g[\"data\"][0].items()}\n    if not p.get(\"dismissable\"):\n        continue\n    out.append({\"id\": i, \"app\": p.get(\"appName\") or \"\", \"title\": p.get(\"title\") or \"\",\n                \"text\": p.get(\"text\") or \"\", \"reply\": p.get(\"replyId\") or \"\",\n                \"icon\": (p.get(\"iconPath\") or \"\") if p.get(\"hasIcon\") else \"\"})\nout.sort(key=lambda n: int(n[\"id\"]) if n[\"id\"].isdigit() else 0, reverse=True)\nprint(json.dumps(out))\n"
@@ -321,7 +321,7 @@ PlasmaCore.Dialog {
             (arg !== undefined ? " " + shq(arg) : "")));
     }
 
-    // retirer = balayer la notification : le message lui-même n'est pas supprimé
+    // dismiss = swipe the notification away: the message itself is not deleted
     function dismissNotif(id) {
         notifCall(id, "dismiss");
         notifs = notifs.filter(function (n) { return n.id !== id; });
@@ -342,11 +342,11 @@ PlasmaCore.Dialog {
         return true;
     }
 
-    // ── Contacts (fiches vCard synchronisées par KDE Connect) ──
-    // lus à l'ouverture du formulaire SMS, gardés en mémoire seulement
+    // ── Contacts (vCard files synchronized by KDE Connect) ──
+    // read when the SMS form opens, kept in memory only
     property var contacts: []          // [{name, number, type, key, digits}]
     property var smsSuggestions: []
-    property string smsContact: ""     // « Marie (mobile) » une fois choisi
+    property string smsContact: ""     // "Marie (mobile)" once chosen
 
     readonly property string lecteurContacts: "import sys, os, glob, quopri\nout = set()\nfor f in glob.glob(os.path.join(sys.argv[1], \"*.vcf\")):\n    try:\n        raw = open(f, \"rb\").read().decode(\"utf-8\", \"replace\").replace(\"\\r\\n\", \"\\n\")\n    except Exception:\n        continue\n    lignes = []\n    for l in raw.split(\"\\n\"):\n        if lignes and l[:1] in (\" \", \"\\t\"):\n            lignes[-1] += l[1:]\n            continue\n        if lignes and lignes[-1].endswith(\"=\") and \"QUOTED-PRINTABLE\" in lignes[-1].split(\":\", 1)[0].upper():\n            lignes[-1] = lignes[-1][:-1] + l\n            continue\n        lignes.append(l)\n    nom, tels = \"\", []\n    for l in lignes:\n        if \":\" not in l:\n            continue\n        k, v = l.split(\":\", 1)\n        parts = k.split(\";\")\n        cle, params = parts[0].upper(), \";\".join(parts[1:]).upper()\n        if \"QUOTED-PRINTABLE\" in params:\n            v = quopri.decodestring(v.encode()).decode(\"utf-8\", \"replace\")\n        if cle == \"FN\":\n            nom = v.strip()\n        elif cle == \"TEL\":\n            t = \"mobile\" if \"CELL\" in params else \"domicile\" if \"HOME\" in params else \"travail\" if \"WORK\" in params else \"\"\n            tels.append((v.strip(), t))\n    for num, t in tels:\n        if nom and num:\n            out.add((nom.replace(\"\\t\", \" \"), num, t))\nfor n, num, t in sorted(out, key=lambda x: x[0].lower()):\n    print(n + \"\\t\" + num + \"\\t\" + t)\n"
 
@@ -366,7 +366,7 @@ PlasmaCore.Dialog {
     function filterContacts(q) {
         var n = sansAccents(q).trim();
         var chiffres = n.replace(/[^0-9]/g, "");
-        // numéros français : 06… et +33 6… sont équivalents
+        // French numbers: 06… and +33 6… are equivalent
         var autre = chiffres.indexOf("0") === 0 ? "33" + chiffres.slice(1)
                   : chiffres.indexOf("33") === 0 ? "0" + chiffres.slice(2) : "";
         var res = [];
@@ -381,8 +381,8 @@ PlasmaCore.Dialog {
         smsSuggestions = res;
     }
 
-    // affichage à la française : 06 35 93 98 41  /  +336 35 93 98 41
-    // (numéros étrangers ou courts : laissés tels quels)
+    // French-style display: 06 35 93 98 41  /  +336 35 93 98 41
+    // (foreign or short numbers: left as they are)
     function fmtNumero(num) {
         var brut = String(num).trim();
         var d = brut.replace(/[^0-9]/g, "");
@@ -403,20 +403,20 @@ PlasmaCore.Dialog {
         smsContact = "";
         smsSuggestions = [];
         if (smsOpen) {
-            smsNumber.text = "";        // nouveau destinataire à chaque ouverture
+            smsNumber.text = "";        // new recipient on every opening
             loadContacts();
         }
     }
 
     function sendSms(num, msg) {
         if (!online || num.trim() === "" || msg.trim() === "") return false;
-        if (num.replace(/[^0-9]/g, "").length < 3) {        // un nom, pas un numéro
+        if (num.replace(/[^0-9]/g, "").length < 3) {        // a name, not a number
             say(i18n("Choose a contact from the list or type a number"));
             return false;
         }
         smsEnCours = true;
         say(i18n("Sending SMS…"));
-        // « echo CODE=$? » : la commande dit si le téléphone a bien reçu l'ordre d'envoi
+        // "echo CODE=$?": the command tells whether the phone really received the send order
         var propre = num.trim().replace(/[\s.\-()]/g, "");   // 06 35… -> 0635…
         smsSource.connectSource("sh -c " + shq(cli("--destination " + shq(propre) +
                                 " --send-sms " + shq(msg)) + "; echo CODE=$?") + " #" + Date.now());
@@ -425,10 +425,10 @@ PlasmaCore.Dialog {
     property bool smsEnCours: false
 
 
-    // ── Petits composants au style du thème ─────────────────────────────────
-    // icône Fluent du widget : le SVG sert de pochoir (masque), rempli avec la
-    // couleur du texte du thème. Lu directement depuis le fichier : Plasma ne
-    // peut pas lui substituer une icône du thème portant le même nom.
+    // ── Small components in the theme's style ─────────────────────────────
+    // widget Fluent icon: the SVG serves as a stencil (mask), filled with the
+    // theme's text color. Read directly from the file: Plasma cannot
+    // substitute a theme icon with the same name for it.
     component FluentIcon: Item {
         id: fi
         property string src: ""
@@ -453,20 +453,20 @@ PlasmaCore.Dialog {
             source: fiCouleur
             maskEnabled: true
             maskSource: fiForme
-            // seuil à mi-transparence + transition douce : les bords anticrénelés
-            // gardent leur finesse (sinon chaque trait s'épaissit d'un pixel)
+            // threshold at half transparency + soft transition: the anti-aliased edges
+            // keep their thinness (otherwise every stroke gets one pixel thicker)
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
         }
     }
 
-    // ligne de la fenêtre « ··· » : même présentation que la fenêtre Alimentation
-    // (icône 22 px, marges, surlignement blanc 50 % arrondi au survol)
+    // row of the "···" window: same layout as the Power window
+    // (22 px icon, margins, white 50% rounded highlight on hover)
     component PlusItem: Item {
         id: pi
         property string label: ""
-        property string icone: ""          // icône Fluent du widget
-        property string iconeFichier: ""   // ou fichier d'icône précis (prioritaire)
+        property string icone: ""          // widget Fluent icon
+        property string iconeFichier: ""   // or a specific icon file (takes priority)
         signal clicked()
         Layout.fillWidth: true
         implicitWidth: piRow.implicitWidth + (Kirigami.Units.smallSpacing + 6) * 2
@@ -476,7 +476,7 @@ PlasmaCore.Dialog {
             anchors.margins: 2
             radius: Kirigami.Units.smallSpacing
             color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")
-            border.width: 1                 // même bordure que les autres surlignements
+            border.width: 1                 // same border as the other highlights
             border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
             opacity: piMouse.containsMouse ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -515,18 +515,18 @@ PlasmaCore.Dialog {
         }
     }
 
-    // bouton : surlignement blanc 50 % + bordure au survol
+    // button: white 50% highlight + border on hover
     component PanelButton: Item {
         id: pb
         property string text: ""
         property string iconName: ""
-        property bool framed: true          // cadre visible au repos (boutons Android / iPhone)
+        property bool framed: true          // frame visible at rest (Android / iPhone buttons)
         readonly property bool fluent: iconName.indexOf("/icons/kdeconnect/") >= 0
         readonly property bool hovered: pbMouse.containsMouse
-        property bool press: false      // effet d'enfoncement au clic
-        // Fenestra : l'icône tourne 2 s après un clic (bouton Actualiser) ; clic ignoré pendant ce temps
+        property bool press: false      // press effect on click
+        // Fenestra: the icon spins for 2 s after a click (Refresh button); click ignored meanwhile
         property bool tournerAuClic: false
-        property string tip: ""   // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+        property string tip: ""   // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
         onHoveredChanged: panel.infobulle(pb, hovered ? pb.tip : "")
         property bool tourne: false
         Timer { id: pbTour; interval: 2000; onTriggered: pb.tourne = false }
@@ -561,7 +561,7 @@ PlasmaCore.Dialog {
                 id: pbFluent
                 visible: pb.fluent
                 src: pb.fluent ? pb.iconName : ""
-                width: pb.tournerAuClic ? Math.round(Kirigami.Units.iconSizes.small * 1.25) : Kirigami.Units.iconSizes.small; height: width   // actualiser-taille (2.0) : 20 px, taille native de l'icône
+                width: pb.tournerAuClic ? Math.round(Kirigami.Units.iconSizes.small * 1.25) : Kirigami.Units.iconSizes.small; height: width   // refresh-size (2.0): 20 px, the icon's native size
                 anchors.verticalCenter: parent.verticalCenter
                 NumberAnimation on rotation {
                     from: 0
@@ -573,7 +573,7 @@ PlasmaCore.Dialog {
                 }
             }
             Text {
-                visible: pb.text !== ""   // actualiser-centre (2.0) : pas de place réservée pour un texte vide
+                visible: pb.text !== ""   // refresh-center (2.0): no space reserved for an empty text
                 text: pb.text
                 color: Kirigami.Theme.textColor
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize
@@ -598,7 +598,7 @@ PlasmaCore.Dialog {
         }
     }
 
-    // tuile d'action : icône + libellé, surlignement blanc 50 % au survol
+    // action tile: icon + label, white 50% highlight on hover
     component ActionTile: Item {
         id: at
         FontMetrics { id: atMetrics; font: Kirigami.Theme.smallFont }
@@ -667,11 +667,11 @@ PlasmaCore.Dialog {
         }
     }
 
-    // illustration dessinée (PC portable + téléphone), aux couleurs du thème
+    // drawn illustration (laptop + phone), in the theme's colors
     component Illustration: Item {
         implicitWidth: 170
         implicitHeight: 110
-        // écran du portable
+        // laptop screen
         Rectangle {
             id: laptop
             x: 0; y: 8
@@ -681,19 +681,19 @@ PlasmaCore.Dialog {
                            Kirigami.Theme.highlightColor.b, 0.35)
             border.width: 3
             border.color: "#5A5A5A"
-            Rectangle {   // petites « notifications » sur l'écran
+            Rectangle {   // small "notifications" on the screen
                 x: 14; y: 30; width: 16; height: 16; radius: 4; color: "#F2A33A"
             }
             Rectangle { x: 34; y: 30; width: 16; height: 16; radius: 4; color: "#3DAEE6" }
             Rectangle { x: 54; y: 30; width: 40; height: 16; radius: 4; color: "#ffffff"; opacity: 0.9 }
         }
-        // socle du portable
+        // laptop base
         Rectangle {
             x: -8; y: laptop.y + laptop.height - 1
             width: laptop.width + 16; height: 7; radius: 3
             color: "#8A8A8A"
         }
-        // téléphone
+        // phone
         Rectangle {
             x: 108; y: 0
             width: 52; height: 100
@@ -709,7 +709,7 @@ PlasmaCore.Dialog {
         }
     }
 
-    // ── Contenu du volet ────────────────────────────────────────────────────
+    // ── Panel content ──────────────────────────────────────────────────────
     mainItem: Item {
         id: content
         width: Kirigami.Units.gridUnit * 16
@@ -721,7 +721,7 @@ PlasmaCore.Dialog {
         focus: true
         Keys.onEscapePressed: panel.close()
 
-        // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+        // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
         Item {
             id: bulleInfo
             z: 1000
@@ -731,9 +731,9 @@ PlasmaCore.Dialog {
             height: bulleTexte.implicitHeight + bulleFond.margins.top + bulleFond.margins.bottom
             x: panel.infoCible ? Math.max(4, Math.min(content.width - width - 4, pt.x + panel.infoCible.width / 2 - width / 2)) : 0
             y: panel.infoCible ? ((pt.y - height - 4 >= 4) ? pt.y - height - 4 : pt.y + panel.infoCible.height + 4) : 0
-            Kirigami.Theme.colorSet: Kirigami.Theme.Tooltip   // couleurs d'infobulle du thème, comme toutes les autres
+            Kirigami.Theme.colorSet: Kirigami.Theme.Tooltip   // theme tooltip colors, like all the others
             Kirigami.Theme.inherit: false
-            Rectangle {   // ombre douce autour de la bulle
+            Rectangle {   // soft shadow around the bubble
                 z: -1
                 anchors.fill: parent
                 anchors.margins: -1
@@ -742,7 +742,7 @@ PlasmaCore.Dialog {
                 Rectangle { z: -1; anchors.fill: parent; anchors.margins: -2; radius: 9; color: Qt.rgba(0, 0, 0, 0.035)
                     Rectangle { z: -1; anchors.fill: parent; anchors.margins: -2; radius: 11; color: Qt.rgba(0, 0, 0, 0.025) } }
             }
-            KSvg.FrameSvgItem {   // le dessin d'infobulle du thème Plasma : même aspect que toutes les infobulles
+            KSvg.FrameSvgItem {   // the Plasma theme's tooltip drawing: same look as all the tooltips
                 id: bulleFond
                 anchors.fill: parent
                 imagePath: "widgets/tooltip"
@@ -765,18 +765,18 @@ PlasmaCore.Dialog {
             }
         }
 
-        // objets non visuels (un Dialog n'accepte que son mainItem comme enfant)
-        // le menu se ferme -> le volet aussi ; le menu bouge -> on suit
-        // survol du volet (fonctionne sans focus)
+        // non-visual objects (a Dialog accepts only its mainItem as a child)
+        // the menu closes -> the panel too; the menu moves -> we follow
+        // panel hover (works without focus)
         HoverHandler {
             id: voletHover
             onHoveredChanged: panel.syncFlag()
         }
 
-        // après chaque clic dans le volet (au relâchement, une fois l'action faite),
-        // le focus est rendu au menu : KWin l'accepte car c'est la suite d'un clic
-        // (un simple déplacement de souris serait refusé sous Wayland).
-        // Poignée passive : elle observe les clics sans jamais les intercepter.
+        // after every click in the panel (on release, once the action is done),
+        // focus is given back to the menu: KWin accepts it because it follows a click
+        // (a simple mouse movement would be refused under Wayland).
+        // Passive handle: it observes the clicks without ever intercepting them.
         PointHandler {
             acceptedButtons: Qt.LeftButton
             onActiveChanged: if (!active) Qt.callLater(panel.rendreFocus)
@@ -794,14 +794,14 @@ PlasmaCore.Dialog {
             function onHeightChanged() { if (panel.visible) Qt.callLater(panel.reposition); }
         }
 
-        // Fenestra : délai de grâce à l'ouverture : menu et volet apparaissent ensemble,
-        // la surveillance ci-dessous attend qu'ils soient en place
+        // Fenestra: grace delay at opening: menu and panel appear together,
+        // the monitoring below waits until they are in place
         Timer { id: graceVolet; interval: 600; onTriggered: panel.syncFlag() }
         Timer { id: retardVolet; interval: panel.retardOuverture; onTriggered: panel.rouvrirSiActif() }
-        // Fenestra : préchargement du téléphone : 3 s après le démarrage, volet fermé (contenu prêt à la 1re ouverture)
+        // Fenestra: phone preloading: 3 s after startup, panel closed (content ready at the 1st opening)
         Timer { id: prechargementVolet; interval: 3000; running: true; onTriggered: if (!panel.visible) panel.refresh() }
 
-        // clic en dehors du menu ET du volet -> tout se ferme
+        // click outside the menu AND the panel -> everything closes
         Timer {
             interval: 250
             repeat: true
@@ -817,7 +817,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // rafraîchissement régulier tant que le volet est ouvert
+        // regular refresh while the panel is open
         Timer {
             interval: 5000
             repeat: true
@@ -855,7 +855,7 @@ PlasmaCore.Dialog {
                                     mVolume: isNaN(parseInt(f[15])) ? -1 : parseInt(f[15]) });
                     }
                 }
-                // garde l'appareil choisi s'il existe toujours
+                // keeps the chosen device if it still exists
                 var keepId = panel.dev ? panel.dev.id : "";
                 panel.devices = list;
                 var idx = 0;
@@ -897,7 +897,7 @@ PlasmaCore.Dialog {
                 try {
                     var liste = JSON.parse(String(data["stdout"] || "[]"));
                     if (Array.isArray(liste)) panel.notifs = liste;
-                } catch (e) { /* lecture ratée : on garde la liste précédente */ }
+                } catch (e) { /* failed reading: we keep the previous list */ }
             }
         }
 
@@ -914,7 +914,7 @@ PlasmaCore.Dialog {
                     smsText.text = "";
                     panel.smsOpen = false;
                 } else {
-                    // le formulaire reste ouvert, le texte est conservé
+                    // the form stays open, the text is kept
                     panel.say(i18n("✗ Failed: SMS not handed over to the phone"));
                 }
             }
@@ -949,10 +949,10 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ----- Page : aucun appareil appairé (accueil) -----
+        // ----- Page: no paired device (welcome) -----
         ColumnLayout {
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra : recentrage du volet
+            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra: panel recentering
             width: parent.width - Kirigami.Units.gridUnit * 2
             spacing: Kirigami.Units.largeSpacing
             visible: panel.loaded && panel.devices.length === 0 && panel.page === "auto"
@@ -992,10 +992,10 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ----- Page : guide d'appairage (Android ou iPhone) -----
+        // ----- Page: pairing guide (Android or iPhone) -----
         ColumnLayout {
             anchors.centerIn: parent
-            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra : recentrage du volet
+            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra: panel recentering
             width: parent.width - Kirigami.Units.gridUnit * 2
             spacing: Kirigami.Units.largeSpacing
             visible: panel.page === "android" || panel.page === "iphone"
@@ -1052,14 +1052,14 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ----- Page : appareil appairé -----
+        // ----- Page: paired device -----
         ColumnLayout {
             anchors.top: parent.top
             anchors.topMargin: Kirigami.Units.gridUnit
             anchors.bottom: piedVolet.top
             anchors.bottomMargin: Kirigami.Units.smallSpacing
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra : recentrage du volet
+            anchors.horizontalCenterOffset: -panel.recentrageVolet   // Fenestra: panel recentering
             width: parent.width - Kirigami.Units.gridUnit * 2
             spacing: Kirigami.Units.smallSpacing
             visible: panel.dev !== null && panel.page === "auto"
@@ -1083,7 +1083,7 @@ PlasmaCore.Dialog {
                 spacing: Kirigami.Units.smallSpacing
                 Kirigami.Icon {
                     source: panel.dev && panel.dev.type === "tablet" ? "tablet" : "smartphone"
-                    Layout.leftMargin: -Math.round(Kirigami.Units.iconSizes.medium * 0.25)   // alignement-volet (2.0) : le dessin s'aligne sur le début du trait
+                    Layout.leftMargin: -Math.round(Kirigami.Units.iconSizes.medium * 0.25)   // panel-alignment (2.0): the drawing aligns with the start of the line
                     Layout.preferredWidth: Kirigami.Units.iconSizes.medium
                     Layout.preferredHeight: Kirigami.Units.iconSizes.medium
                 }
@@ -1091,7 +1091,7 @@ PlasmaCore.Dialog {
                     id: tVoletBloc
                     Layout.fillWidth: true
                     spacing: 0
-                    // centrage-volet (2.0) : le bloc de texte est centré entre le téléphone et Actualiser (même écart de chaque côté)
+                    // panel-centering (2.0): the text block is centered between the phone and Refresh (same gap on each side)
                     readonly property int decalage: Math.max(0, Math.round((width - Math.max(tVoletNom.implicitWidth, tVoletEtat.implicitWidth)) / 2))
                     Text {
                         id: tVoletNom
@@ -1135,7 +1135,7 @@ PlasmaCore.Dialog {
                             text: panel.dev ? panel.dev.charge + " %" : ""
                             color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.7) : "#4A4A4A")
                         }
-                        // réseau mobile : 4 barres (force 0 à 4) + type (4G, 5G…)
+                        // mobile network: 4 bars (strength 0 to 4) + type (4G, 5G…)
                         Text {
                             visible: panel.hasNetwork
                             text: "·"
@@ -1168,14 +1168,14 @@ PlasmaCore.Dialog {
                     framed: false
                     iconName: panel.ico("refresh")
                     tournerAuClic: true
-                    Layout.rightMargin: -Math.round(Kirigami.Units.smallSpacing * 1.25)   // alignement-volet (2.0) : le dessin s'aligne sur la fin du trait
+                    Layout.rightMargin: -Math.round(Kirigami.Units.smallSpacing * 1.25)   // panel-alignment (2.0): the drawing aligns with the end of the line
                     implicitWidth: implicitHeight
                     onClicked: panel.run("kdeconnect-cli --refresh")
-                    tip: i18n("Refresh")   // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+                    tip: i18n("Refresh")   // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
                 }
             }
 
-            Rectangle {   // trait
+            Rectangle {   // line
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
                 height: 1
@@ -1200,14 +1200,14 @@ PlasmaCore.Dialog {
                 ActionTile { text: i18n("Settings");            iconName: panel.ico("settings");   active: true;         onClicked: panel.doSettings() }
             }
 
-            // formulaire SMS
+            // SMS form
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
                 visible: panel.smsOpen && panel.online
                 spacing: Kirigami.Units.smallSpacing
 
-                Text {   // destinataire choisi
+                Text {   // chosen recipient
                     Layout.fillWidth: true
                     visible: panel.smsContact !== ""
                     elide: Text.ElideRight
@@ -1223,7 +1223,7 @@ PlasmaCore.Dialog {
                         panel.smsContact = "";
                         panel.filterContacts(text);
                     }
-                    // Entrée : premier contact proposé, sinon passage au message
+                    // Enter: first suggested contact, otherwise move on to the message
                     onAccepted: {
                         if (panel.smsSuggestions.length > 0) {
                             var c = panel.smsSuggestions[0];
@@ -1233,7 +1233,7 @@ PlasmaCore.Dialog {
                         smsText.forceActiveFocus();
                     }
                 }
-                // suggestions de contacts (6 au plus)
+                // contact suggestions (6 at most)
                 ColumnLayout {
                     Layout.fillWidth: true
                     visible: panel.smsSuggestions.length > 0
@@ -1292,7 +1292,7 @@ PlasmaCore.Dialog {
                 PC3.ScrollView {
                     id: smsScroll
                     Layout.fillWidth: true
-                    // grandit avec le texte (4 à 8 unités), puis ascenseur
+                    // grows with the text (4 to 8 units), then scroll bar
                     Layout.preferredHeight: Math.max(Kirigami.Units.gridUnit * 4,
                         Math.min(Kirigami.Units.gridUnit * 8,
                                  smsText.contentHeight + smsText.topPadding + smsText.bottomPadding))
@@ -1302,7 +1302,7 @@ PlasmaCore.Dialog {
                         id: smsText
                         placeholderText: i18n("Message")
                         wrapMode: TextEdit.Wrap
-                        // la zone visible suit le curseur pendant la frappe
+                        // the visible area follows the cursor while typing
                         onCursorRectangleChanged: {
                             var f = smsScroll.contentItem;
                             if (!f || f.contentY === undefined) return;
@@ -1331,7 +1331,7 @@ PlasmaCore.Dialog {
                 }
             }
 
-            // formulaire « Envoyer un lien »
+            // "Send a link" form
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
@@ -1360,8 +1360,8 @@ PlasmaCore.Dialog {
                 }
             }
 
-            // musique en cours sur le téléphone (visible seulement pendant la lecture)
-            Rectangle {   // trait
+            // music playing on the phone (visible only during playback)
+            Rectangle {   // line
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
                 visible: panel.hasMedia
@@ -1376,7 +1376,7 @@ PlasmaCore.Dialog {
 
                 FluentIcon {
                     src: panel.ico("music")
-                    Layout.leftMargin: -11 + panel.recentrageVolet   // Fenestra : recentrage du volet
+                    Layout.leftMargin: -11 + panel.recentrageVolet   // Fenestra: panel recentering
                     Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
                     Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
                 }
@@ -1417,30 +1417,30 @@ PlasmaCore.Dialog {
                     framed: false
                     press: true
                     iconName: panel.ico("next")
-                    Layout.rightMargin: -7 - panel.recentrageVolet   // Fenestra : recentrage du volet
+                    Layout.rightMargin: -7 - panel.recentrageVolet   // Fenestra: panel recentering
                     implicitWidth: implicitHeight
                     onClicked: panel.media("Next")
                 }
             }
 
-            // une seule ligne :  −  +   1:24 ━━━━○──── 3:52
-            // (volume à gauche ; progression à droite, masquée pour un direct)
+            // a single row:  −  +   1:24 ━━━━○──── 3:52
+            // (volume on the left; progress on the right, hidden for a live stream)
             RowLayout {
                 Layout.fillWidth: true
                 visible: panel.hasProgress || panel.hasVolume
                 spacing: Kirigami.Units.smallSpacing
 
-                PanelButton {   // volume : muet / son rétabli
+                PanelButton {   // volume: mute / sound restored
                     visible: panel.hasVolume
                     framed: false
                     press: true
-                    Layout.leftMargin: -13 + panel.recentrageVolet   // Fenestra : recentrage du volet
+                    Layout.leftMargin: -13 + panel.recentrageVolet   // Fenestra: panel recentering
                     iconName: (panel.dev && panel.dev.mVolume === 0) ? Qt.resolvedUrl("../icons/status/phone-audio-volume-muted.svg") : "audio-volume-medium"
                     implicitHeight: 26
                     implicitWidth: implicitHeight
                     onClicked: panel.toggleMute()
                 }
-                PanelButton {   // volume : un cran de moins
+                PanelButton {   // volume: one step down
                     visible: panel.hasVolume
                     framed: false
                     press: true
@@ -1450,7 +1450,7 @@ PlasmaCore.Dialog {
                     implicitWidth: implicitHeight
                     onClicked: panel.volumeStep(-7)
                 }
-                PanelButton {   // volume : un cran de plus
+                PanelButton {   // volume: one step up
                     visible: panel.hasVolume
                     framed: false
                     press: true
@@ -1459,12 +1459,12 @@ PlasmaCore.Dialog {
                     implicitWidth: implicitHeight
                     onClicked: panel.volumeStep(7)
                 }
-                Item {          // direct (pas de durée) : les boutons restent à gauche
+                Item {          // live stream (no duration): the buttons stay on the left
                     visible: !panel.hasProgress
                     Layout.fillWidth: true
                 }
 
-                Timer {   // avance fluide entre deux lectures (toutes les 5 s)
+                Timer {   // smooth advance between two readings (every 5 s)
                     interval: 1000
                     repeat: true
                     running: panel.visible && panel.hasProgress && panel.dev.mPlaying
@@ -1485,22 +1485,22 @@ PlasmaCore.Dialog {
                     readonly property real ratio: panel.hasProgress
                         ? Math.max(0, Math.min(1, panel.mediaPos / panel.dev.mLength)) : 0
 
-                    Rectangle {   // piste
+                    Rectangle {   // track
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width; height: 3; radius: 1.5
                         color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? Qt.rgba(1, 1, 1, 0.15) : Qt.rgba(0, 0, 0, 0.15))
                     }
-                    Rectangle {   // partie écoulée
+                    Rectangle {   // elapsed part
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width * barre.ratio; height: 3; radius: 1.5
-                        color: Kirigami.Theme.highlightColor
+                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#0055A4" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
                     }
-                    Rectangle {   // curseur (au survol, si on peut se déplacer)
+                    Rectangle {   // cursor (on hover, if the position can be changed)
                         visible: barreMouse.containsMouse && panel.dev && panel.dev.mSeek
                         width: 10; height: 10; radius: 5
                         anchors.verticalCenter: parent.verticalCenter
                         x: parent.width * barre.ratio - width / 2
-                        color: Kirigami.Theme.highlightColor
+                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#0055A4" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
                         border.width: 2
                         border.color: "#ffffff"
                     }
@@ -1514,7 +1514,7 @@ PlasmaCore.Dialog {
                 }
                 Text {
                     visible: panel.hasProgress
-                    Layout.rightMargin: -panel.recentrageVolet   // Fenestra : recentrage du volet
+                    Layout.rightMargin: -panel.recentrageVolet   // Fenestra: panel recentering
                     text: panel.hasProgress ? panel.fmtTime(panel.dev.mLength) : ""
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
                     color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.7) : "#4A4A4A")
@@ -1522,7 +1522,7 @@ PlasmaCore.Dialog {
             }
 
 
-            // message de confirmation
+            // confirmation message
             Text {
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
@@ -1536,7 +1536,7 @@ PlasmaCore.Dialog {
             }
 
             // ── Notifications ─────────────────────────────────────────────
-            Rectangle {   // trait
+            Rectangle {   // line
                 Layout.fillWidth: true
                 Layout.topMargin: Kirigami.Units.smallSpacing
                 visible: panel.notifs.length > 0
@@ -1553,8 +1553,8 @@ PlasmaCore.Dialog {
                     color: Kirigami.Theme.textColor
                 }
             }
-            // les 3 plus récentes au plus (le volet est un complément), et seulement
-            // celles qui tiennent entièrement dans la place restante (carte musique…)
+            // the 3 most recent at most (the panel is a complement), and only
+            // those that fit entirely in the remaining space (music card…)
             Item {
                 id: notifZone
                 Layout.fillWidth: true
@@ -1572,7 +1572,7 @@ PlasmaCore.Dialog {
                     id: nt
                     required property var modelData
                     width: notifList.width
-                    // masquée si elle ne tient pas entièrement (pas de notification coupée)
+                    // hidden if it does not fit entirely (no cut-off notification)
                     readonly property bool tient: y + height <= notifZone.height
                     opacity: tient ? 1 : 0
                     enabled: tient
@@ -1594,7 +1594,7 @@ PlasmaCore.Dialog {
                         anchors.margins: Kirigami.Units.smallSpacing
                         spacing: Kirigami.Units.smallSpacing
 
-                        Image {   // icône de l'application
+                        Image {   // application icon
                             Layout.alignment: Qt.AlignTop
                             Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
                             Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
@@ -1633,7 +1633,7 @@ PlasmaCore.Dialog {
                                 text: nt.modelData.text
                                 color: Kirigami.Theme.textColor
                             }
-                            PanelButton {   // répondre (messageries, SMS…)
+                            PanelButton {   // reply (messaging apps, SMS…)
                                 visible: nt.modelData.reply !== "" && !nt.enReponse
                                 framed: false
                                 text: i18n("Reply")
@@ -1643,7 +1643,7 @@ PlasmaCore.Dialog {
                                     Qt.callLater(function () { ntReponse.forceActiveFocus(); });
                                 }
                             }
-                            RowLayout {     // champ de réponse
+                            RowLayout {     // reply field
                                 Layout.fillWidth: true
                                 visible: nt.enReponse
                                 PC3.TextField {
@@ -1660,13 +1660,13 @@ PlasmaCore.Dialog {
                                 }
                             }
                         }
-                        PanelButton {   // retirer (le message n'est pas supprimé)
+                        PanelButton {   // dismiss (the message is not deleted)
                             Layout.alignment: Qt.AlignTop
                             framed: false
                             text: "✕"
                             implicitWidth: implicitHeight
                             onClicked: panel.dismissNotif(nt.modelData.id)
-                            tip: i18n("Dismiss notification")   // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+                            tip: i18n("Dismiss notification")   // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
                         }
                     }
                 }
@@ -1674,49 +1674,49 @@ PlasmaCore.Dialog {
                 }
             }
 
-            // sans notification : l'espace libre reste en bas
+            // without notification: the free space stays at the bottom
             Item {
                 Layout.fillHeight: true
                 visible: panel.notifs.length === 0
             }
         }
 
-        // ----- Chargement -----
+        // ----- Loading -----
         PC3.BusyIndicator {
             anchors.centerIn: parent
             running: visible
             visible: !panel.loaded
         }
 
-        // ----- Bandeau de pied : même composant et même hauteur que celui du menu -----
+        // ----- Footer strip: same component and same height as the menu's -----
         PlasmaExtras.PlasmoidHeading {
             id: piedVolet
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            contentHeight: Kirigami.Units.gridUnit * 3 - 10   // même hauteur que le pied du menu
+            contentHeight: Kirigami.Units.gridUnit * 3 - 10   // same height as the menu's footer
             position: PC3.ToolBar.Footer
-            // le fond du bandeau va jusqu'aux bords de la fenêtre
+            // the strip's background extends to the window edges
             leftInset: -panel.margins.left
             rightInset: -panel.margins.right
             bottomInset: -panel.margins.bottom
 
-            // « ··· » comme sous Windows 11 : menu d'options
+            // "···" as in Windows 11: options menu
             PanelButton {
                 id: plusBouton
                 anchors.right: parent.right
-                anchors.rightMargin: Kirigami.Units.gridUnit + panel.recentrageVolet   // Fenestra : recentrage du volet
+                anchors.rightMargin: Kirigami.Units.gridUnit + panel.recentrageVolet   // Fenestra: panel recentering
                 anchors.verticalCenter: parent.verticalCenter
                 framed: false
                 text: "···"
-                implicitWidth: 32    // 1.2 : même taille que le « ··· » de Fenestra Search
+                implicitWidth: 32    // 1.2: same size as the "···" of Fenestra Search
                 implicitHeight: 26
                 onClicked: plusMenu.visible = !plusMenu.visible
-                tip: i18n("More options")   // 2.0 : infobulle dessinée dans le volet (Plasma 6.8 place mal les infobulles de cette fenêtre)
+                tip: i18n("More options")   // 2.0: tooltip drawn inside the panel (Plasma 6.8 misplaces the tooltips of this window)
             }
         }
 
-        // fenêtre « ··· » : même type et même présentation que la fenêtre Alimentation
+        // "···" window: same type and layout as the Power window
         PlasmaCore.Dialog {
             id: plusMenu
             flags: Qt.WindowStaysOnTopHint
@@ -1724,7 +1724,7 @@ PlasmaCore.Dialog {
             hideOnWindowDeactivate: true
             visible: false
 
-            // ouverte : le volet et le menu restent ouverts (même principe qu'Alimentation)
+            // open: the panel and the menu stay open (same principle as Power)
             onVisibleChanged: {
                 if (visible) {
                     panel.hold = true;
@@ -1734,7 +1734,7 @@ PlasmaCore.Dialog {
                 }
             }
 
-            // au-dessus du bouton, alignée sur son bord droit
+            // above the button, aligned on its right edge
             function reposition() {
                 var pos = plusBouton.mapToGlobal(plusBouton.width, 0);
                 x = Math.round(pos.x - width);
@@ -1743,9 +1743,18 @@ PlasmaCore.Dialog {
 
             mainItem: ColumnLayout {
                 spacing: 0
+                PlusItem {   // 2.1: direct access to the widget settings
+                    label: i18n("Configure Fenestra Menu 11")
+                    icone: "settings"
+                    onClicked: {
+                        plusMenu.visible = false;
+                        kicker.expanded = false;
+                        kicker.ouvrirReglages();
+                    }
+                }
                 PlusItem {
                     label: i18n("Open KDE Connect")
-                    // même icône que le bouton KDE Connect du menu
+                    // same icon as the menu's KDE Connect button
                     iconeFichier: Qt.resolvedUrl("../icons/status/fenestra-kdeconnect.svg")
                     onClicked: { plusMenu.visible = false; panel.run("kdeconnect-app"); }
                 }
@@ -1754,12 +1763,12 @@ PlasmaCore.Dialog {
                     icone: "subtract"
                     onClicked: { plusMenu.visible = false; Plasmoid.configuration.kdeConnectPanelOn = false; panel.close(); }
                 }
-                PlusItem {   // 1.2 : « À propos », comme Fenestra Search
+                PlusItem {   // 1.2: "About", like Fenestra Search
                     label: i18n("About Fenestra Menu 11")
                     iconeFichier: "help-about"
                     onClicked: {
                         plusMenu.visible = false;
-                        panel.hold = true;        // menu et volet restent ouverts derrière
+                        panel.hold = true;        // menu and panel stay open behind it
                         kicker.ouvrirAPropos(panel);
                     }
                 }

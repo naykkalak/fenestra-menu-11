@@ -41,13 +41,13 @@ Item {
     && Plasmoid.configuration.customButtonImage.length != 0)
     property QtObject dashWindow: null
 
-    // ── « Oreille » posée sur la barre (même principe que Panel Colorizer) ──
-    // Le bouton Démarrer est dessiné DANS la fenêtre de la barre : on remonte
-    // jusqu'à l'élément racine de cette fenêtre et on y pose une poignée
-    // PASSIVE, qui entend chaque clic sur la barre sans jamais l'intercepter.
-    // Un clic sur la barre (espace vide compris) ferme alors le menu ; le volet
-    // KDE Connect suit automatiquement. Le clic sur le bouton Démarrer lui-même
-    // est ignoré (il gère déjà l'ouverture/fermeture).
+    // ── "Ear" placed on the taskbar (same principle as Panel Colorizer) ──
+    // The Start button is drawn INSIDE the taskbar window: we walk up
+    // to the root item of that window and attach a PASSIVE handle to it,
+    // which hears every click on the taskbar without ever intercepting it.
+    // A click on the taskbar (empty space included) then closes the menu; the KDE
+    // Connect panel follows automatically. A click on the Start button itself
+    // is ignored (it already handles opening/closing).
     property QtObject panelEar: null
 
     function barRoot() {
@@ -56,20 +56,20 @@ Item {
         return p;
     }
 
-    // remise à zéro de l'oreille : si le relâchement d'un clic s'est perdu
-    // (une fenêtre s'est fermée pendant l'appui), elle resterait « appuyée »
-    // et n'entendrait plus rien -> mêmes symptômes que la barre de recherche.
+    // reset of the ear: if a click release got lost
+    // (a window closed during the press), it would stay "pressed"
+    // and hear nothing anymore -> same symptoms as the search bar.
     function resetEar() {
         if (!panelEar) return;
         panelEar.enabled = false;
         panelEar.enabled = true;
     }
 
-    // ── Oreille PARTAGÉE entre le menu Démarrer et la capsule ──
-    // Deux PointHandler posés sur le même élément se volent le clic :
-    // celui qui le saisit prive l'autre, qui devient sourd. On n'en pose
-    // donc qu'UN SEUL sur la barre, repéré par son objectName, et chaque
-    // widget vient y brancher son écoute.
+    // ── Ear SHARED between the Start menu and the search capsule ──
+    // Two PointHandlers on the same item steal the click from each other:
+    // the one that grabs it deprives the other, which goes deaf. So only
+    // ONE is placed on the taskbar, found by its objectName, and each
+    // widget plugs its listener into it.
     function oreillePartagee(top) {
         var nom = "fenestraOreilleBarre";
         for (var i = 0; i < top.data.length; i++) {
@@ -83,28 +83,28 @@ Item {
 
     function ensureEar() {
         var top = barRoot();
-        if (!top || top === root) return;              // pas encore dans la barre
-        if (panelEar && panelEar.parent === top) return; // déjà posée
+        if (!top || top === root) return;              // not in the taskbar yet
+        if (panelEar && panelEar.parent === top) return; // already placed
         panelEar = root.oreillePartagee(top);
         panelEar.activeChanged.connect(function() {
-            if (!panelEar || !panelEar.active) return;          // seulement à l'appui
-            Qt.callLater(root.resetEar);                       // repart propre pour le clic suivant
+            if (!panelEar || !panelEar.active) return;          // only on press
+            Qt.callLater(root.resetEar);                       // starts clean for the next click
             if (!dashWindow || !dashWindow.visible) return;
             var s = panelEar.point.scenePosition;
             var l = root.mapFromItem(null, s.x, s.y);
             if (l.x >= 0 && l.y >= 0 && l.x < root.width && l.y < root.height)
-                return;                                          // bouton Démarrer
+                return;                                          // Start button
             dashWindow.visible = false;
         });
     }
 
-    Component.onDestruction: panelEar = null   // oreille partagée : on ne la détruit pas
+    Component.onDestruction: panelEar = null   // shared ear: we do not destroy it
 
-    // ── Fenêtre réduite ou fermée pendant que le menu est ouvert ──
-    // Plasma laisse le menu ouvert dans ce cas (même comportement avec Kickoff) ;
-    // Windows 11 le ferme. On surveille la liste des fenêtres (celle de la barre
-    // des tâches) : une fenêtre qui passe à « réduite » ou qui disparaît ferme le
-    // menu (le volet KDE Connect suit). Le menu et le volet n'y figurent pas.
+    // ── Window minimized or closed while the menu is open ──
+    // Plasma leaves the menu open in that case (same behavior with Kickoff);
+    // Windows 11 closes it. We watch the window list (the taskbar's own):
+    // a window that becomes "minimized" or disappears closes the menu
+    // (the KDE Connect panel follows). The menu and the panel are not in that list.
     property var etatReduit: ({})
 
     function cleFenetre(row) {
@@ -141,7 +141,7 @@ Item {
         onRowsInserted: root.relever(false)
         onRowsRemoved: {
             root.relever(false);
-            root.fermerMenu();          // une fenêtre a été fermée
+            root.fermerMenu();          // a window was closed
         }
     }
     Plasmoid.status: dashWindow && dashWindow.visible ? PlasmaCore.Types.RequiresAttentionStatus : PlasmaCore.Types.PassiveStatus
@@ -159,8 +159,8 @@ Item {
         anchors.fill: parent
         anchors.leftMargin: -5
         anchors.rightMargin: -5
-        anchors.topMargin: -4      // 1 px de moins en haut
-        anchors.bottomMargin: -4   // 1 px de moins en bas
+        anchors.topMargin: -4      // 1 px less at the top
+        anchors.bottomMargin: -4   // 1 px less at the bottom
         radius: 5
         color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")
         border.width: 1
@@ -196,12 +196,12 @@ Item {
 
     Component.onCompleted: {
         dashWindow = Qt.createQmlObject("MenuRepresentation {}", root);
-        // l'oreille est posée à la première ouverture du menu (la barre est prête)
+        // the ear is placed when the menu is first opened (the taskbar is ready)
         dashWindow.visibleChanged.connect(function() {
             if (dashWindow.visible) {
                 root.ensureEar();
-                root.resetEar();        // oreille propre à chaque ouverture
-                root.relever(false);    // état de départ des fenêtres
+                root.resetEar();        // clean ear on every opening
+                root.relever(false);    // initial state of the windows
             }
         });
         plasmoid.activated.connect(function() {

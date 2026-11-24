@@ -26,7 +26,7 @@
 
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Effects   // 2.0 : icône Fluent teintée
+import QtQuick.Effects   // 2.0: tinted Fluent icon
 import QtQuick.Controls 2.15
 import QtCore
 import org.kde.plasma.plasmoid
@@ -37,35 +37,40 @@ import org.kde.plasma.private.kicker 0.1 as Kicker
 import org.kde.kquickcontrolsaddons 2.0
 
 import org.kde.kirigami as Kirigami
-import org.kde.ksvg as KSvg   // Fenestra : barre fine
+import org.kde.ksvg as KSvg   // Fenestra: thin bar
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kitemmodels 1.0 as KItemModels
 import org.kde.coreaddons 1.0 as KCoreAddons
 import "code/plugins.js" as PluginSystem
-import "code/Moteurs.js" as Moteurs   // Fenestra : moteurs web (repris de Fenestra Search)
+import "code/Moteurs.js" as Moteurs   // Fenestra: web engines (taken from Fenestra Search)
 
 PlasmaCore.Dialog {
     id: root
 
     objectName: "popupWindow"
     flags: Qt.WindowStaysOnTopHint
+    // 2.1: four rounded corners: a menu placed at the bottom = a "floating" window (its position is computed separately)
     location: {
-        if (Plasmoid.configuration.displayPosition === 1)
+        if (Plasmoid.configuration.displayPosition === 1 || Plasmoid.configuration.displayPosition === 2)
             return PlasmaCore.Types.Floating;
-        else if (Plasmoid.configuration.displayPosition === 2)
-            return PlasmaCore.Types.BottomEdge;
+        else if (Plasmoid.location === PlasmaCore.Types.BottomEdge)
+            return PlasmaCore.Types.Floating;
         else
             return Plasmoid.location;
     }
     hideOnWindowDeactivate: true
 
     // Ensure minimum dimensions to prevent empty dialog error
-    // Fenestra : largeur de la fenêtre donnée à l'ouverture (voir onVisibleChanged)
+    // Fenestra: window width given at opening (see onVisibleChanged)
     height: Math.max(rootItem.height, 200)
 
-    // Fenestra : colonnes automatiques : 6 sous 1900 px, 7 pour un écran 1920, 8 à partir de 2500 px
-    // (largeur de l'écran en pixels logiques, mise à l'échelle comprise)
+    // Fenestra: automatic columns: 6 below 1900 px, 7 for a 1920 screen, 8 from 2500 px
+    // (screen width in logical pixels, scaling included)
+    // 2.1: menu size chosen in the settings: 0 = automatic (as below), 1 = small (6 columns), 2 = large (8 columns)
     readonly property int colonnesAuto: {
+        var s = Plasmoid.configuration.menuSize;
+        if (s === 1) return 6;
+        if (s === 2) return 8;
         var w = kicker.screenGeometry.width;
         if (w >= 2500) return 8;
         if (w >= 1900) return 7;
@@ -117,13 +122,13 @@ PlasmaCore.Dialog {
     }
     onVisibleChanged: {
         if (visible) {
-            width = Math.round(rootItem.width + margins.left + margins.right);   // Fenestra : largeur de la fenêtre donnée à l'ouverture
-            voletPrevu = Plasmoid.configuration.kdeConnectMemoriser && Plasmoid.configuration.kdeConnectPanelOn;   // Fenestra : groupe menu + volet centré ; Fenestra : option du volet
+            width = Math.round(rootItem.width + margins.left + margins.right);   // Fenestra: window width given at opening
+            voletPrevu = Plasmoid.configuration.kdeConnectMemoriser && Plasmoid.configuration.kdeConnectPanelOn;   // Fenestra: centered menu + panel group; Fenestra: panel option
             var pos = popupPosition(width, height);
             x = pos.x;
             y = pos.y;
             reset();
-            // Fenestra : chargements après l'affichage (le menu se dessine d'abord)
+            // Fenestra: loading after display (the menu is drawn first)
             chargementsOuverture.restart();
         } else {
             view.currentIndex = 0;
@@ -150,7 +155,7 @@ PlasmaCore.Dialog {
         root.visible = !root.visible;
     }
 
-    // Fenestra : chargements après l'affichage : appelés juste après l'ouverture
+    // Fenestra: loading after display: called right after opening
     function chargerApresOuverture(force) {
         if (!root.visible && !force) return;
         rootItem.loadFolders();
@@ -187,7 +192,7 @@ PlasmaCore.Dialog {
         categoryFlyout.visible = false;
     }
 
-    // Fenestra : groupe menu + volet centré : largeur du volet + écart, quand il est (ou va être) ouvert
+    // Fenestra: centered menu + panel group: panel width + gap, when it is (or is about to be) open
     property bool voletPrevu: false
     function largeurVolet() {
         if (!voletPrevu) return 0;
@@ -196,11 +201,11 @@ PlasmaCore.Dialog {
         return w + Kirigami.Units.smallSpacing * 2;
     }
 
-    // Fenestra : glissement du menu : durée du déplacement du menu (ms)
-    property int dureeGlissement: 250   // Fenestra : glissement du menu
-    // Fenestra : délais du groupe : départ du volet après le début du glissement / retour du menu après le début de l'effacement
-    property int delaiOuvertureVolet: 250   // Fenestra : délais du groupe
-    property int delaiFermetureVolet: 200   // Fenestra : délais du groupe
+    // Fenestra: menu slide: duration of the menu's movement (ms)
+    property int dureeGlissement: 250   // Fenestra: menu slide
+    // Fenestra: group delays: panel start after the slide begins / menu return after the fade-out begins
+    property int delaiOuvertureVolet: 250   // Fenestra: group delays
+    property int delaiFermetureVolet: 200   // Fenestra: group delays
     function glisserMenuVers(nx) {
         glissementMenu.stop();
         glissementMenu.from = x;
@@ -208,7 +213,7 @@ PlasmaCore.Dialog {
         glissementMenu.duration = dureeGlissement;
         glissementMenu.start();
     }
-    // Fenestra : ordre du recentrage : à l'ouverture, le menu se décale d'abord, puis le volet apparaît
+    // Fenestra: recentering order: on opening, the menu shifts first, then the panel appears
     function basculerVolet() {
         if (kdeConnectPanel.visible) { kdeConnectPanel.toggle(); return; }
         attenteRecentrage.stop();
@@ -216,7 +221,7 @@ PlasmaCore.Dialog {
         var pos = popupPosition(width, height);
         y = pos.y;
         glisserMenuVers(pos.x);
-        apparitionVolet.interval = delaiOuvertureVolet;   // Fenestra : glissement du menu : le volet arrive après le glissement
+        apparitionVolet.interval = delaiOuvertureVolet;   // Fenestra: menu slide: the panel arrives after the slide
         apparitionVolet.restart();
     }
     function recentrerMenu() {
@@ -281,9 +286,9 @@ PlasmaCore.Dialog {
 
     mainItem: FocusScope {
         id: rootItem
-        // Fenestra : chargements après l'affichage : minuteur des chargements
+        // Fenestra: loading after display: loading timer
         Timer { id: chargementsOuverture; interval: 30; onTriggered: root.chargerApresOuverture() }
-        // Fenestra : groupe menu + volet centré : le volet s'ouvre ou se ferme -> le menu se recentre
+        // Fenestra: centered menu + panel group: the panel opens or closes -> the menu recenters
         Connections {
             target: kdeConnectPanel
             function onVisibleChanged() {
@@ -297,14 +302,14 @@ PlasmaCore.Dialog {
                         root.y = pos.y;
                     }
                 } else {
-                    attenteRecentrage.restart();   // Fenestra : ordre du recentrage : le volet s'efface d'abord
+                    attenteRecentrage.restart();   // Fenestra: recentering order: the panel fades out first
                 }
             }
         }
         Timer { id: attenteRecentrage; interval: root.delaiFermetureVolet; onTriggered: root.recentrerMenu() }
-        NumberAnimation { id: glissementMenu; target: root; property: "x"; easing.type: Easing.OutCubic }   // Fenestra : glissement du menu
+        NumberAnimation { id: glissementMenu; target: root; property: "x"; easing.type: Easing.OutCubic }   // Fenestra: menu slide
         Timer { id: apparitionVolet; interval: 0; onTriggered: if (root.visible && !kdeConnectPanel.visible) kdeConnectPanel.toggle() }
-        // Fenestra : préchargement au démarrage : dates des recommandations prêtes avant la 1re ouverture
+        // Fenestra: preloading at startup: recommendation dates ready before the 1st opening
         Timer { id: prechargement; interval: 3000; onTriggered: root.chargerApresOuverture(true) }
 
 
@@ -314,24 +319,24 @@ PlasmaCore.Dialog {
         property int pinnedItemsPerPage: root.colonnesAuto * Plasmoid.configuration.numberRows
         property bool ctrlHeld: false
         property bool pinnedCollapsed: false
-        property int pinnedCollapsedRows: 2   // rangées visibles quand replié (façon Windows 11)
-        // horodatage (ms) de la dernière touche de navigation dans une grille, partagé par toutes les grilles
+        property int pinnedCollapsedRows: 2   // rows visible when collapsed (Windows 11 style)
+        // timestamp (ms) of the last navigation key press in a grid, shared by all grids
         property double lastNavKeyTime: 0
         function keyNavRecently() { return Date.now() - lastNavKeyTime < 400; }
-        // bord gauche commun de toutes les rubriques (= bord de la 1re icône épinglée, icône centrée dans sa cellule)
+        // common left edge of all sections (= edge of the 1st pinned icon, icon centered in its cell)
         property int sectionInset: Math.max(0, Math.round((globalFavoritesGrid.cellWidth - root.iconSize) / 2))
-        // marge interne gauche des lignes de recommandations / de la liste « Tout » (icône décalée dans sa ligne)
+        // left inner margin of the recommendation rows / of the "All" list (icon offset within its row)
         property int listIconPad: Math.round(Kirigami.Units.gridUnit / 2)
 
-        // Bouton d'en-tête de section : sans cadre, surlignement blanc 50 % au survol
-        // (même fond que le cadre des boutons d'applis de la barre des tâches)
+        // Section header button: no frame, white 50% highlight on hover
+        // (same background as the frame of the taskbar's app buttons)
         component SectionButton: Item {
             id: sectionBtn
             property string text: ""
             property string iconName: ""
-            property bool flat: false          // gardés pour compatibilité avec AToolButton
+            property bool flat: false          // kept for compatibility with AToolButton
             property int buttonHeight: 25
-            property bool iconLeft: false      // icône avant le texte
+            property bool iconLeft: false      // icon before the text
             signal clicked()
 
             implicitWidth: btnRow.implicitWidth + Kirigami.Units.largeSpacing * 2
@@ -343,7 +348,7 @@ PlasmaCore.Dialog {
                 anchors.fill: parent
                 radius: 5
                 color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")
-                border.width: 1                 // même bordure que les autres surlignements
+                border.width: 1                 // same border as the other highlights
                 border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                 opacity: btnMouse.containsMouse ? 1.0 : 0.0
                 Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -394,17 +399,19 @@ PlasmaCore.Dialog {
             }
         }
 
-        // Fenestra : largeur stable : 733 px de contenu pour 7 colonnes (+ 12 px de cadre = 745 px), en proportion sinon
-        // Fenestra : marges latérales réduites : 8 px de marge de chaque côté (18 à l'origine)
+        // Fenestra: stable width: 733 px of content for 7 columns (+ 12 px of frame = 745 px), proportional otherwise
+        // Fenestra: reduced side margins: 8 px of margin on each side (18 originally)
         readonly property int margeCote: 8
-        // contenu : 697 px d'icônes pour 7 colonnes + 2 marges = 713 px (+ 12 px de cadre = 725 px de fenêtre)
-        readonly property int largeurVoulue: Math.round(697 * root.colonnesAuto / 7) + 2 * margeCote
+        // content: 697 px of icons for 7 columns + 2 margins = 713 px (+ 12 px of frame = 725 px window)
+        readonly property int largeurVoulue: (root.colonnesAuto === 7 ? 697 : 96 * root.colonnesAuto) + 2 * margeCote
         width: largeurVoulue
-        // hauteur souhaitée de la page qui défile (la hauteur réelle s'adapte à la place disponible)
+        // desired height of the scrolling page (the real height adapts to the available space)
         readonly property real viewWanted: Kirigami.Units.gridUnit * 38
+        // 2.1: the menu never exceeds the free height of the screen (small screens, 125 % scaling)
+        readonly property real hauteurMaxEcran: Math.max(Kirigami.Units.gridUnit * 20, kicker.availableScreenRect.height - Math.round(Kirigami.Units.gridUnit * 1.85))
 
         // Fenestra : whole pixels, otherwise Plasma's Dialog can loop forever on wheel events (rounding)
-        height: Math.ceil(view.y + rootItem.viewWanted + footer.height + 0)   // hauteur demandée : haut de la page + page souhaitée + pied (+ 0 px)
+        height: Math.min(Math.ceil(view.y + rootItem.viewWanted + footer.height + 0), rootItem.hauteurMaxEcran)   // requested height: top of the page + desired page + footer (+ 0 px)
 
         Layout.minimumWidth: largeurVoulue
         Layout.maximumWidth: largeurVoulue
@@ -517,8 +524,8 @@ PlasmaCore.Dialog {
         }
 
         function buildAllAppsCombo() {
-            // détache le modèle pendant la reconstruction : un seul recalcul à la fin,
-            // au lieu d'un par insertion (source de la latence en mode Grille)
+            // detaches the model during the rebuild: a single recomputation at the end,
+            // instead of one per insertion (source of the latency in Grid mode)
             allAppsGrid.model = null;
             allAppsComboModel.clear();
             if (!sortedAppsModel.sourceModel) { allAppsGrid.model = allAppsComboModel; return; }
@@ -608,10 +615,10 @@ PlasmaCore.Dialog {
                 combined = (sortMode === 2) ? folderRows.concat(appRows) : appRows.concat(folderRows);
             }
 
-            if (sortMode === 0 || sortMode === 1) { // séparateurs A/B/C... aussi en mode Grille
+            if (sortMode === 0 || sortMode === 1) { // A/B/C... separators also in Grid mode
                 var withHeaders = [];
                 var lastLetter = null;
-                // nombre de colonnes réel de la grille (1 en mode Liste : jamais de complément nécessaire)
+                // real number of columns of the grid (1 in List mode: no padding is ever needed)
                 var gridCols = (Plasmoid.configuration.allAppsViewMode === 1 && allAppsGrid.columnsCount > 1)
                                ? allAppsGrid.columnsCount : 1;
                 for (var hi = 0; hi < combined.length; hi++) {
@@ -641,7 +648,7 @@ PlasmaCore.Dialog {
                             disabled: false, hasActionList: false,
                             sourceRow: -1, folderIdx: -1, indented: false, expanded: false
                         });
-                        // complète le reste de la ligne : la lettre occupe toute la rangée à elle seule
+                        // completes the rest of the row: the letter takes the whole row by itself
                         if (gridCols > 1) {
                             for (var bi2 = 0; bi2 < gridCols - 1; bi2++) {
                                 withHeaders.push({
@@ -660,12 +667,12 @@ PlasmaCore.Dialog {
             }
 
             for (var ci = 0; ci < combined.length; ci++) allAppsComboModel.append(combined[ci]);
-            allAppsGrid.model = allAppsComboModel; // réattache : un seul recalcul ici
+            allAppsGrid.model = allAppsComboModel; // reattaches: a single recomputation here
         }
 
-        // Descend récursivement dans les sous-catégories d'un modèle (ex: Jeux -> Arcade
-        // -> ...) et ne garde que les vraies applis (favoriteId non vide), peu importe la
-        // profondeur. Générique : marche pour n'importe quelle catégorie à sous-groupes.
+        // Recursively descends into the subcategories of a model (e.g. Games -> Arcade
+        // -> ...) and keeps only real apps (non-empty favoriteId), whatever the
+        // depth. Generic: works for any category with subgroups.
         function collectCategoryApps(model, out, seen) {
             if (!model) return;
             var n = 0;
@@ -674,7 +681,7 @@ PlasmaCore.Dialog {
                 var idx = model.index(i, 0);
                 var fid = "";
                 try { fid = String(model.data(idx, kickerFavoriteIdRole) || ""); } catch (e2) { fid = ""; }
-                if (fid !== "" && seen[fid]) continue; // déjà vu via une autre sous-catégorie
+                if (fid !== "" && seen[fid]) continue; // already seen via another subcategory
                 if (fid !== "") {
                     seen[fid] = true;
                     out.push({
@@ -847,7 +854,7 @@ PlasmaCore.Dialog {
                 handleQuery: function(q) { return null; },
                 searchResults: function(q) {
                     if (!q || q.length < 2) return [];
-                    // Fenestra : moteur choisi dans KDE, comme Fenestra Search
+                    // Fenestra: engine chosen in KDE, like Fenestra Search
                     var m = rootItem.moteur;
                     var url = Moteurs.adresse(m, q);
                     return [{
@@ -863,7 +870,7 @@ PlasmaCore.Dialog {
         // Aggregated plugin search results — updated whenever the runner query changes
         property var pluginResults: []
 
-        // Fenestra : moteur web choisi dans KDE (Configuration système > Recherche web), relu à chaque ouverture
+        // Fenestra: web engine chosen in KDE (System Settings > Web Search Keywords), re-read on every opening
         property string sortieKde: ""
         readonly property var moteur: Moteurs.depuisKde(sortieKde)
         Plasma5Support.DataSource {
@@ -946,7 +953,7 @@ PlasmaCore.Dialog {
             property var favoritesModel: sourceModel ? sourceModel.favoritesModel : null
         }
 
-        // Recommandations : seulement les 6 éléments affichés (pas de lignes cachées qui cassent le clavier)
+        // Recommendations: only the 6 displayed items (no hidden rows that break the keyboard)
         KItemModels.KSortFilterProxyModel {
             id: docsLimitedModel
             filterRowCallback: function (sourceRow, sourceParent) { return sourceRow < 6; }
@@ -960,9 +967,9 @@ PlasmaCore.Dialog {
             property var favoritesModel: sourceModel ? sourceModel.favoritesModel : null
         }
 
-        // ── Dates des recommandations (date de modification des fichiers, lue avec stat) ──
-        property var docEpochs: ({})       // url -> secondes (date de modification)
-        property var docDates: ({})        // url -> texte affiché (« jeudi à 10:05 »)
+        // ── Recommendation dates (file modification date, read with stat) ──
+        property var docEpochs: ({})       // url -> seconds (modification date)
+        property var docDates: ({})        // url -> displayed text ("Thursday at 10:05")
 
         function formatDocDate(epochSeconds) {
             var d = new Date(epochSeconds * 1000);
@@ -981,7 +988,7 @@ PlasmaCore.Dialog {
             return s;
         }
 
-        // heure « à la Windows » : « Il y a 18h » pendant 24 h, puis « hier à … », « jeudi à 10:05 »
+        // time "Windows style": "18h ago" for 24 h, then "yesterday at …", "Thursday at 10:05"
         function formatRecentTime(epochSeconds) {
             var diffMin = Math.floor((Date.now() - epochSeconds * 1000) / 60000);
             if (diffMin < 1) return i18n("Just now");
@@ -999,8 +1006,8 @@ PlasmaCore.Dialog {
                 if (u.indexOf("file://") === 0) urls.push(u);
             }
             if (urls.length === 0) { rebuildDocModels(); return; }
-            // date de DERNIÈRE UTILISATION (base d'activité KDE, comme Dolphin),
-            // repli sur la date de modification ; adresses complètes, décodées côté Python
+            // date of LAST USE (KDE activity database, like Dolphin),
+            // falling back to the modification date; full addresses, decoded on the Python side
             var quoted = urls.map(function (u) {
                 return "'" + u.replace(/'/g, "'\\''") + "'";
             }).join(" ");
@@ -1033,8 +1040,8 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Recommandations triées par date (la plus récente d'abord) ──
-        // listes construites ici : page 1 = 6 plus récents, page complète = 7 derniers jours
+        // ── Recommendations sorted by date (most recent first) ──
+        // lists built here: page 1 = 6 most recent, full page = last 7 days
         function resolveDocRow(url, hintRow) {
             var m = docsLimitedModel.sourceModel;
             if (!m) return -1;
@@ -1072,7 +1079,7 @@ PlasmaCore.Dialog {
                 var u = String(m.data(m.index(i, 0), kickerUrlRole));
                 rows.push({ i: i, url: u, t: docEpochs[u] || 0 });
             }
-            // plus récent d'abord ; sans date : à la fin, dans l'ordre d'usage de Plasma
+            // most recent first; undated: at the end, in Plasma's usage order
             rows.sort(function (a, b) { return (b.t - a.t) || (a.i - b.i); });
             for (var k = 0; k < rows.length; k++) {
                 var mi = m.index(rows[k].i, 0);
@@ -1115,8 +1122,8 @@ PlasmaCore.Dialog {
             function actionListForRow(row) { return rootItem.docActionList(get(row)); }
         }
 
-        // ── Le curseur de frappe reste dans la recherche ──
-        // si le focus part vers une liste sans navigation au clavier (simple survol), on le rend à la recherche
+        // ── The typing cursor stays in the search ──
+        // if focus goes to a list without keyboard navigation (simple hover), we give it back to the search
         Connections {
             id: keepSearchFocus
             target: root
@@ -1136,19 +1143,19 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Nouvelles applications : détection à l'installation, notification, marquage « nouveau » ──
-        // incrémenté à chaque rafraîchissement du catalogue (les sous-modèles des catégories sont alors remplacés)
+        // ── New applications: detection at installation, notification, "new" marking ──
+        // incremented on every catalog refresh (the categories' submodels are then replaced)
         property int categoryRevision: 0
-        property var knownApps: []          // fichiers .desktop connus
-        property var newApps: ({})          // identifiant de l'appli -> { t, cat, name }
-        property var pendingApps: []        // détectées, en attente de leur catégorie
+        property var knownApps: []          // known .desktop files
+        property var newApps: ({})          // app identifier -> { t, cat, name }
+        property var pendingApps: []        // detected, waiting for their category
         property int pendingRounds: 0
         property bool newAppsLoaded: false
         readonly property bool newAppsReady: Plasmoid.configuration.knownApps !== undefined
 
         readonly property string desktopListCmd: "for d in $(echo \"${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share\" | tr ':' ' '); do ls -1 \"$d/applications\" 2>/dev/null; done | grep '\\.desktop$' | sort -u"
 
-        function normId(id) { return String(id || "").replace(/^applications:/, ""); }   // ids-applis (2.0) : « applications:x.desktop » ou « x.desktop »
+        function normId(id) { return String(id || "").replace(/^applications:/, ""); }   // app-ids (2.0): "applications:x.desktop" or "x.desktop"
         function shq(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
 
         function saveKnownApps() { Plasmoid.configuration.knownApps = JSON.stringify(knownApps); }
@@ -1158,7 +1165,7 @@ PlasmaCore.Dialog {
             try { knownApps = JSON.parse(Plasmoid.configuration.knownApps || "[]"); } catch (e) { knownApps = []; }
             var stored = {};
             try { stored = JSON.parse(Plasmoid.configuration.newApps || "{}"); } catch (e) { stored = {}; }
-            // une nouveauté est oubliée après 7 jours
+            // a novelty is forgotten after 7 days
             var keep = {}, changed = false, now = Date.now();
             for (var k in stored) {
                 if (stored[k] && now - stored[k].t < 7 * 86400000) keep[k] = stored[k];
@@ -1172,7 +1179,7 @@ PlasmaCore.Dialog {
         function handleDesktopList(list) {
             if (!newAppsReady || list.length === 0) return;
             if (!newAppsLoaded) loadNewApps();
-            if (knownApps.length === 0) {              // 1er passage : état de départ, sans notification
+            if (knownApps.length === 0) {              // 1st pass: initial state, without notification
                 knownApps = list;
                 saveKnownApps();
                 return;
@@ -1185,7 +1192,7 @@ PlasmaCore.Dialog {
             knownApps = list;
             saveKnownApps();
             if (added.length > 0) {
-                // nouvelles-applis (2.0) : marquée « nouvelle » tout de suite ; le catalogue KDE est mis à jour, puis catégorie et notification
+                // new-apps (2.0): marked "new" right away; the KDE catalog is updated, then category and notification
                 var marquees = JSON.parse(JSON.stringify(newApps));
                 for (var m = 0; m < added.length; m++)
                     if (!marquees[added[m]]) marquees[added[m]] = { t: Date.now(), cat: "", name: added[m].replace(/\.desktop$/, "") };
@@ -1197,7 +1204,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // recherche de la catégorie des nouvelles applis dans les catégories du menu
+        // search for the category of the new apps among the menu's categories
         function resolvePendingApps() {
             if (pendingApps.length === 0) return;
             var want = {};
@@ -1207,7 +1214,7 @@ PlasmaCore.Dialog {
                 var sub = categoryRootModel.modelForRow(c);
                 if (!sub) continue;
                 var catName = String(categoryRootModel.data(categoryRootModel.index(c, 0), Qt.DisplayRole) || sub.description || "");
-                var flat = [];   // recursif-applis (2.0) : descend dans les sous-groupes, comme la tuile
+                var flat = [];   // recursive-apps (2.0): descends into the subgroups, like the tile
                 collectCategoryApps(sub, flat, {});
                 for (var r = 0; r < flat.length; r++) {
                     var fid = normId(flat[r].favoriteId);
@@ -1219,7 +1226,7 @@ PlasmaCore.Dialog {
             }
             var missing = pendingApps.filter(function (id) { return !foundIds[id]; });
             if (missing.length > 0 && pendingRounds < 60) {
-                // catalogue pas encore à jour : on réessaie un peu plus tard
+                // catalog not up to date yet: we retry a little later
                 pendingApps = missing;
                 pendingRounds++;
                 resolveTimer.interval = 5000;
@@ -1290,7 +1297,7 @@ PlasmaCore.Dialog {
             onNewData: function (source, data) { disconnectSource(source); }
         }
 
-        // nouvelles-applis (2.0) : met à jour le catalogue KDE tout de suite, puis relit les catégories
+        // new-apps (2.0): updates the KDE catalog right away, then re-reads the categories
         Plasma5Support.DataSource {
             id: sycocaSource
             engine: "executable"
@@ -1303,7 +1310,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // surveillance toutes les 5 s (1er passage 5 s après le chargement)
+        // check every 5 s (1st pass 5 s after loading)
         Timer {
             id: appsWatchTimer
             interval: 5000
@@ -1315,7 +1322,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // laisse au système le temps de mettre le catalogue à jour, puis relit les catégories
+        // gives the system time to update the catalog, then re-reads the categories
         Timer {
             id: resolveTimer
             interval: 6000
@@ -1333,7 +1340,7 @@ PlasmaCore.Dialog {
             function onRefreshed() { rootItem.categoryRevision++; rootItem.resolvePendingApps(); }
         }
 
-        // ── Défilement en cours : les infobulles sont coupées pendant que la liste bouge sous la souris ──
+        // ── Scrolling in progress: tooltips are disabled while the list moves under the mouse ──
         property bool scrolling: false
         function noteScrolling() {
             scrolling = true;
@@ -1359,9 +1366,9 @@ PlasmaCore.Dialog {
                 top: parent.top
                 topMargin: Kirigami.Units.gridUnit - 10
                 left: parent.left
-                leftMargin: rootItem.margeCote + 20   // Fenestra : recherche décalée
+                leftMargin: rootItem.margeCote + 20   // Fenestra: shifted search
                 right: kdeConnectButton.left
-                rightMargin: Kirigami.Units.smallSpacing * 2 + 10   // compense le décalage du bouton
+                rightMargin: Kirigami.Units.smallSpacing * 2 + 10   // compensates for the button's offset
             }
             focus: true
             placeholderText: i18n("Search for apps, settings and documents")
@@ -1550,19 +1557,19 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Volet « Appareil mobile » (KDE Connect), fichier KdeConnectPanel.qml ──
+        // ── "Mobile device" panel (KDE Connect), file KdeConnectPanel.qml ──
         KdeConnectPanel {
             id: kdeConnectPanel
             menuWindow: root
         }
 
-        // ── Bouton KDE Connect à droite de la recherche (action à brancher plus tard) ──
+        // ── KDE Connect button to the right of the search (action to be wired up later) ──
         Item {
             id: kdeConnectButton
             anchors {
                 top: searchField.top
                 right: parent.right
-                rightMargin: rootItem.margeCote   // Fenestra : bouton aligné sur la marge réduite (était décalé de 10 px vers la droite)
+                rightMargin: rootItem.margeCote   // Fenestra: button aligned on the reduced margin (was shifted 10 px to the right)
             }
             height: searchField.height
             width: height
@@ -1591,7 +1598,7 @@ PlasmaCore.Dialog {
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
-                onClicked: root.basculerVolet()   // Fenestra : ordre du recentrage
+                onClicked: root.basculerVolet()   // Fenestra: recentering order
             }
 
             PC3.ToolTip.text: "KDE Connect"
@@ -1646,10 +1653,10 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Trait sous la barre de recherche ────────────────────────────────
+        // ── Line under the search bar ──
         Rectangle {
             id: searchSeparator
-            // marges du cadre de la fenêtre, mesurées une fois le popup affiché
+            // margins of the window frame, measured once the popup is displayed
             property real extLeft: 0
             property real extRight: 0
             function updateExtension() {
@@ -1678,7 +1685,7 @@ PlasmaCore.Dialog {
             color: colorWithAlpha(Kirigami.Theme.textColor, 0.15)
         }
 
-        // 2.0 : changement de page sans glissement : la page qui part disparaît, la nouvelle apparaît en fondu rapide
+        // 2.0: page change without sliding: the outgoing page disappears, the new one appears with a quick fade
         NumberAnimation { id: fonduPage; target: view; property: "opacity"; from: 0; to: 1; duration: 130; easing.type: Easing.OutCubic }
 
         SwipeView {
@@ -1694,21 +1701,21 @@ PlasmaCore.Dialog {
                 left: parent.left
                 leftMargin: rootItem.margeCote
                 right: parent.right
-                rightMargin: 0   // Fenestra : pages dans le contenu (molette)
+                rightMargin: 0   // Fenestra: pages in the content (wheel)
             }
             onCurrentIndexChanged: {
                 globalFavoritesGrid.currentIndex = -1;
                 documentsGrid.currentIndex = -1;
                 fonduPage.restart();
             }
-            Component.onCompleted: {   // 2.0 : changement de page sans glissement
+            Component.onCompleted: {   // 2.0: page change without sliding
                 if (contentItem && "highlightMoveDuration" in contentItem) contentItem.highlightMoveDuration = 0;
             }
 
             width: rootItem.widthComputed / 0.1
             height: Math.max(Kirigami.Units.gridUnit * 8, Math.min(rootItem.viewWanted, rootItem.height - view.y - footer.height - 0))
 
-            // PAGE 1 — page unique : épinglés, recommandations, « Tout »
+            // PAGE 1 — single page: pinned, recommendations, "All"
             Flickable {
                 id: mainFlick
                 width: view.width
@@ -1720,25 +1727,25 @@ PlasmaCore.Dialog {
                 flickableDirection: Flickable.VerticalFlick
                 onContentYChanged: rootItem.noteScrolling()
 
-                PC3.ScrollBar.vertical: PC3.ScrollBar {   // Fenestra : barre façon Windows 11
+                PC3.ScrollBar.vertical: PC3.ScrollBar {   // Fenestra: Windows 11 style bar
                     id: barreFenestra
-                    implicitWidth: 14   // largeur d'origine de la barre du thème
+                    implicitWidth: 14   // original width of the theme's bar
                     hoverEnabled: true
                     visible: size < 1.0 && policy !== PC3.ScrollBar.AlwaysOff
                     readonly property bool survol: hovered || pressed
                     readonly property bool eveille: active || extinction.running
-                    function reveil() { extinction.restart(); }   // appelée quand la souris bouge
+                    function reveil() { extinction.restart(); }   // called when the mouse moves
                     Timer { id: extinction; interval: 1500 }
-                    background: KSvg.FrameSvgItem {   // survol : fond du thème
+                    background: KSvg.FrameSvgItem {   // hover: theme background
                         imagePath: "widgets/scrollbar"
                         prefix: "background-vertical"
-                        transform: Translate { x: 4 }   // Fenestra : collé au bord, comme Windows
+                        transform: Translate { x: 4 }   // Fenestra: stuck to the edge, like Windows
                         opacity: barreFenestra.survol ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
                     contentItem: Item {
                         implicitWidth: 14
-                        Rectangle {   // souris qui bouge : trait fin côté bord
+                        Rectangle {   // mouse moving: thin line on the edge side
                             anchors.right: parent.right
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
@@ -1750,17 +1757,17 @@ PlasmaCore.Dialog {
                             opacity: (barreFenestra.eveille && !barreFenestra.survol) ? 0.55 : 0
                             Behavior on opacity { NumberAnimation { duration: 150 } }
                         }
-                        KSvg.FrameSvgItem {   // survol / glissement : poignée du thème
+                        KSvg.FrameSvgItem {   // hover / drag: theme handle
                             anchors.fill: parent
                             imagePath: "widgets/scrollbar"
                             prefix: "mouseover-slider"
-                            transform: Translate { x: 4 }   // Fenestra : collé au bord, comme Windows
+                            transform: Translate { x: 4 }   // Fenestra: stuck to the edge, like Windows
                             opacity: barreFenestra.survol ? 1 : 0
                             Behavior on opacity { NumberAnimation { duration: 150 } }
                         }
                     }
                 }
-                HoverHandler { onPointChanged: barreFenestra.reveil() }   // Fenestra : réveil de la barre
+                HoverHandler { onPointChanged: barreFenestra.reveil() }   // Fenestra: wakes the bar
 
                 function tryActivate(row, col) {
                     if (!rootItem.pinnedCollapsed)
@@ -1803,7 +1810,7 @@ PlasmaCore.Dialog {
                 RowLayout {
                     id: topRow
                     x: rootItem.sectionInset
-                    // + largeSpacing + 5 : compense le padding interne du bouton (comme Catégories)
+                    // + largeSpacing + 5: compensates for the button's inner padding (like Categories)
                     width: parent.width - rootItem.sectionInset * 2 + Kirigami.Units.largeSpacing + 5
 
                     PlasmaExtras.Heading {
@@ -1830,9 +1837,9 @@ PlasmaCore.Dialog {
 
                 ItemGridView {
                     id: globalFavoritesGrid
-                    whiteHighlight: true // surlignement blanc 50 %
+                    whiteHighlight: true // white 50% highlight
                     visible: true
-                    clip: true   // coupe net les rangées au-delà du repli
+                    clip: true   // cuts the rows beyond the collapse point cleanly
                     width: parent.width
                     height: root.cellSizeHeight * Math.max(1, Math.min(rootItem.pinnedCollapsed ? rootItem.pinnedCollapsedRows : Plasmoid.configuration.numberRows, Math.ceil(count / root.colonnesAuto)))
                     itemColumns: 1
@@ -2228,7 +2235,7 @@ PlasmaCore.Dialog {
 
                     RowLayout {
                         id: docsHeaderRow
-                        // + largeSpacing + 5 : compense le padding interne du bouton (comme Catégories)
+                        // + largeSpacing + 5: compensates for the button's inner padding (like Categories)
                         width: parent.width + Kirigami.Units.largeSpacing + 5
                         height: butttonActionAllApps.implicitHeight
                         y: docsContainer.recentAppsStripHeight
@@ -2265,7 +2272,7 @@ PlasmaCore.Dialog {
 
                     ItemGridView {
                         id: documentsGrid
-                        whiteHighlight: true // surlignement blanc 50 %
+                        whiteHighlight: true // white 50% highlight
                         recentDocsMode: true
                         y: docsContainer.recentAppsStripHeight + butttonActionAllApps.implicitHeight + Kirigami.Units.largeSpacing * 2
                         x: -rootItem.listIconPad
@@ -2349,16 +2356,16 @@ PlasmaCore.Dialog {
                     }
                 }
 
-                // ── Tout (ex-page « Toutes les applications ») ──────────────
+                // ── All (formerly the "All applications" page) ──
                 RowLayout {
                     id: allAppsHeader
                     x: rootItem.sectionInset
-                    // en mode Catégories : on suit la largeur réellement occupée par les tuiles
-                    // (Math.floor dans CategoryTiles.qml laisse quelques pixels de côté à droite)
+                    // in Categories mode: we follow the width actually occupied by the tiles
+                    // (Math.floor in CategoryTiles.qml leaves a few pixels aside on the right)
                     width: Plasmoid.configuration.allAppsViewMode === 2
                            ? (allAppsCategoryGrid.tileWidth * allAppsCategoryGrid.columnsCount
                               + allAppsCategoryGrid.gap * (allAppsCategoryGrid.columnsCount - 1)
-                              + Kirigami.Units.largeSpacing + 5) // compense le padding du bouton + ajustement fin
+                              + Kirigami.Units.largeSpacing + 5 + (allAppsCategoryGrid.modeColumns === 7 ? 0 : (allAppsCategoryGrid.width - allAppsCategoryGrid.tileWidth * allAppsCategoryGrid.columnsCount - allAppsCategoryGrid.gap * (allAppsCategoryGrid.columnsCount - 1)))) // compensates for the button's padding + fine adjustment; 2.1: Small and Large, the button follows the right edge
                            : (parent.width - rootItem.sectionInset * 2)
                     height: butttonActionAllApps.implicitHeight
 
@@ -2391,7 +2398,7 @@ PlasmaCore.Dialog {
                     height: allAppsGrid.height
                     visible: Plasmoid.configuration.allAppsViewMode !== 2
 
-                    // la molette doit faire défiler la page, pas la grille (qui capte les événements)
+                    // the wheel must scroll the page, not the grid (which captures the events)
                     MouseArea {
                         anchors.fill: parent
                         z: 10
@@ -2407,10 +2414,10 @@ PlasmaCore.Dialog {
 
                     ItemGridView {
                         id: allAppsGrid
-                        whiteHighlight: true // surlignement blanc 50 %
+                        whiteHighlight: true // white 50% highlight
                         width: parent.width
                         readonly property int columnsCount: cellWidth > 0 ? Math.max(1, Math.floor(width / cellWidth)) : 1
-                        // la grille ne défile plus : elle prend toute sa hauteur, c'est la page qui défile
+                        // the grid no longer scrolls: it takes its full height, the page scrolls
                         height: Math.max(1, Math.ceil(allAppsComboModel.count / columnsCount)) * cellHeight
                         itemColumns: Plasmoid.configuration.allAppsViewMode === 1 ? 1 : 2
                         labels2lines: Plasmoid.configuration.allAppsViewMode === 1 && Plasmoid.configuration.labels2lines
@@ -2446,6 +2453,7 @@ PlasmaCore.Dialog {
 
                 CategoryTiles {
                     id: allAppsCategoryGrid
+                    modeColumns: root.colonnesAuto   // 2.1: tiles per size mode
                     visible: Plasmoid.configuration.allAppsViewMode === 2
                     x: rootItem.sectionInset
                     width: parent.width - rootItem.sectionInset * 2
@@ -2454,11 +2462,11 @@ PlasmaCore.Dialog {
                 }
 
                 Item { width: 1; height: Kirigami.Units.largeSpacing }
-                } // fin mainColumn
+                } // end of mainColumn
 
-                // --- MASQUE MOLETTE : intercepte la molette au-dessus d'Épinglé + Recommandations
-                // avant que gridView (en dessous) ne l'absorbe nativement. Aucune MouseArea ici :
-                // clics, survol et glisser-déposer des icônes passent normalement au travers.
+                // --- WHEEL MASK: intercepts the wheel above Pinned + Recommendations
+                // before gridView (below) swallows it natively. No MouseArea here:
+                // clicks, hover and icon drag-and-drop pass through normally.
                 Item {
                     id: wheelMask
                     x: 0
@@ -2479,7 +2487,7 @@ PlasmaCore.Dialog {
                     }
                 }
 
-                // garde la ligne sélectionnée au clavier visible dans la page qui défile
+                // keeps the keyboard-selected row visible in the scrolling page
                 Connections {
                     target: allAppsGrid
                     function onCurrentIndexChanged() {
@@ -2489,7 +2497,7 @@ PlasmaCore.Dialog {
                         mainFlick.ensureVisible(top, top + allAppsGrid.cellHeight);
                     }
                 }
-            // la page suit aussi la sélection clavier quand on remonte vers les recommandations / les épinglés
+            // the page also follows the keyboard selection when moving up to the recommendations / the pinned apps
                 Connections {
                     target: globalFavoritesGrid
                     function onCurrentIndexChanged() {
@@ -2504,7 +2512,7 @@ PlasmaCore.Dialog {
                         mainFlick.ensureVisible(docsContainer.y, docsContainer.y + docsContainer.height);
                     }
                 }
-            } // fin mainFlick
+            } // end of mainFlick
 
 
             // PAGE 3 — Search Results
@@ -2523,21 +2531,21 @@ PlasmaCore.Dialog {
                     anchors.right: parent.right
                     clip: true
                     height: (root.searching && !searchField.text.startsWith('>') && !searchField.text.startsWith('/'))
-                            ? pillsRow.implicitHeight + Kirigami.Units.smallSpacing * 2 + 20   // 2.0 : 20 px d'espace sous les capsules
+                            ? pillsRow.implicitHeight + Kirigami.Units.smallSpacing * 2 + 20   // 2.0: 20 px of space under the capsules
                             : 0
 
                     Behavior on height {
                         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                     }
 
-                    // 2.0 : flèche retour à gauche des capsules, comme dans la recherche de Windows 11
+                    // 2.0: back arrow to the left of the capsules, like in Windows 11 search
                     Item {
                         id: boutonRetour
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: -10   // 2.0 : 20 px d'espace sous les capsules
+                        anchors.verticalCenterOffset: -10   // 2.0: 20 px of space under the capsules
                         anchors.left: parent.left
                         anchors.leftMargin: Kirigami.Units.smallSpacing
-                        width: searchField.height   // 2.0 : même taille que le bouton KDE Connect
+                        width: searchField.height   // 2.0: same size as the KDE Connect button
                         height: searchField.height
                         Accessible.role: Accessible.Button
                         Accessible.name: i18n("Back")
@@ -2545,41 +2553,22 @@ PlasmaCore.Dialog {
                         Rectangle {
                             anchors.fill: parent
                             radius: 5
-                            color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0 : même survol que le bouton KDE Connect
+                            color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0: same hover as the KDE Connect button
                             border.width: 1
                             border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                             opacity: retourSouris.containsMouse ? 1.0 : 0.0
                             Behavior on opacity { NumberAnimation { duration: 100 } }
                         }
-                        Item {   // vraie flèche Fluent (ic_fluent_arrow_left_24_regular), teintée comme le texte
+                        Image {   // real Fluent arrow (ic_fluent_arrow_left_24_regular) (2.1: light version in dark mode, no mask effect)
                             id: flecheRetour
                             anchors.centerIn: parent
-                            width: Kirigami.Units.iconSizes.smallMedium   // 2.0 : taille de la flèche de Windows 11
+                            width: Kirigami.Units.iconSizes.smallMedium
                             height: width
-                            Image {
-                                id: flecheForme
-                                anchors.fill: parent
-                                source: Qt.resolvedUrl("../icons/fluent/arrow-left.svg")
-                                sourceSize.width: Math.max(1, flecheRetour.width) * 2
-                                sourceSize.height: Math.max(1, flecheRetour.height) * 2
-                                smooth: true
-                                visible: false
-                            }
-                            Rectangle {
-                                id: flecheCouleur
-                                anchors.fill: parent
-                                color: Kirigami.Theme.textColor
-                                visible: false
-                            }
-                            MultiEffect {
-                                anchors.fill: parent
-                                source: flecheCouleur
-                                maskEnabled: true
-                                maskSource: flecheForme
-                                maskThresholdMin: 0.5
-                                maskSpreadAtMin: 1.0
-                                opacity: 0.8   // 2.0 : même gris foncé que l'icône KDE Connect (texte du thème à 80 %)
-                            }
+                            source: Qt.resolvedUrl((Kirigami.Theme.textColor.hslLightness > 0.5) ? "../icons/fluent/arrow-left-light.svg" : "../icons/fluent/arrow-left.svg")
+                            sourceSize.width: Math.max(1, width) * 2
+                            sourceSize.height: Math.max(1, height) * 2
+                            smooth: true
+                            opacity: (Kirigami.Theme.textColor.hslLightness > 0.5 ? 1.0 : 0.8)
                         }
                         MouseArea {
                             id: retourSouris
@@ -2593,14 +2582,14 @@ PlasmaCore.Dialog {
                         PC3.ToolTip.delay: 400
                     }
 
-                    // 2.0 : bouton Paramètres à droite des capsules, comme dans la recherche de Windows 11 : ouvre les réglages de la recherche KDE
+                    // 2.0: Settings button to the right of the capsules, like in Windows 11 search: opens the KDE search settings
                     Item {
                         id: boutonReglages
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: -10   // 2.0 : 20 px d'espace sous les capsules
+                        anchors.verticalCenterOffset: -10   // 2.0: 20 px of space under the capsules
                         anchors.right: parent.right
-                        anchors.rightMargin: rootItem.margeCote   // 2.0 : aligné sur le bouton KDE Connect
-                        width: searchField.height   // 2.0 : même taille que le bouton KDE Connect (roue dentée)
+                        anchors.rightMargin: rootItem.margeCote   // 2.0: aligned with the KDE Connect button
+                        width: searchField.height   // 2.0: same size as the KDE Connect button (gear)
                         height: searchField.height
                         Accessible.role: Accessible.Button
                         Accessible.name: i18n("Settings")
@@ -2608,41 +2597,22 @@ PlasmaCore.Dialog {
                         Rectangle {
                             anchors.fill: parent
                             radius: 5
-                            color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0 : même survol que le bouton KDE Connect
+                            color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")   // 2.0: same hover as the KDE Connect button
                             border.width: 1
                             border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                             opacity: reglagesSouris.containsMouse ? 1.0 : 0.0
                             Behavior on opacity { NumberAnimation { duration: 100 } }
                         }
-                        Item {   // vraie roue dentée Fluent (ic_fluent_settings_24_regular), teintée comme le texte
+                        Image {   // real Fluent gear (ic_fluent_settings_24_regular) (2.1: light version in dark mode, no mask effect)
                             id: roueReglages
                             anchors.centerIn: parent
                             width: Kirigami.Units.iconSizes.smallMedium
                             height: width
-                            Image {
-                                id: roueForme
-                                anchors.fill: parent
-                                source: Qt.resolvedUrl("../icons/fluent/settings.svg")
-                                sourceSize.width: Math.max(1, roueReglages.width) * 2
-                                sourceSize.height: Math.max(1, roueReglages.height) * 2
-                                smooth: true
-                                visible: false
-                            }
-                            Rectangle {
-                                id: roueCouleur
-                                anchors.fill: parent
-                                color: Kirigami.Theme.textColor
-                                visible: false
-                            }
-                            MultiEffect {
-                                anchors.fill: parent
-                                source: roueCouleur
-                                maskEnabled: true
-                                maskSource: roueForme
-                                maskThresholdMin: 0.5
-                                maskSpreadAtMin: 1.0
-                                opacity: 0.8   // 2.0 : même gris foncé que l'icône KDE Connect (texte du thème à 80 %)
-                            }
+                            source: Qt.resolvedUrl((Kirigami.Theme.textColor.hslLightness > 0.5) ? "../icons/fluent/settings-light.svg" : "../icons/fluent/settings.svg")
+                            sourceSize.width: Math.max(1, width) * 2
+                            sourceSize.height: Math.max(1, height) * 2
+                            smooth: true
+                            opacity: (Kirigami.Theme.textColor.hslLightness > 0.5 ? 1.0 : 0.8)
                         }
                         MouseArea {
                             id: reglagesSouris
@@ -2650,7 +2620,7 @@ PlasmaCore.Dialog {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                executable.exec("for k in kcmshell6 kcmshell5; do if command -v $k >/dev/null 2>&1 && $k --list 2>/dev/null | grep -q kcm_plasmasearch; then exec $k kcm_plasmasearch; fi; done; exec systemsettings");
+                                executable.exec("kioclient exec /usr/share/applications/kcm_baloofile.desktop || systemsettings kcm_baloofile");   // 2.1: like "Search settings" in Fenestra Search
                                 root.toggle();
                             }
                         }
@@ -2662,7 +2632,7 @@ PlasmaCore.Dialog {
                     Row {
                         id: pillsRow
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: -10   // 2.0 : 20 px d'espace sous les capsules
+                        anchors.verticalCenterOffset: -10   // 2.0: 20 px of space under the capsules
                         anchors.left: boutonRetour.right
                         anchors.leftMargin: Kirigami.Units.smallSpacing
                         spacing: Kirigami.Units.smallSpacing
@@ -2679,7 +2649,7 @@ PlasmaCore.Dialog {
                             delegate: Item {
                                 id: pillDelegate
                                 property bool isActive: kicker.searchRunnerFilter === modelData.key
-                                height: Kirigami.Units.gridUnit * 1.8   // 2.0 : proportions de Windows 11
+                                height: Kirigami.Units.gridUnit * 1.8   // 2.0: Windows 11 proportions
                                 width: pillText.implicitWidth + Kirigami.Units.gridUnit * 2
 
                                 focus: true
@@ -2704,7 +2674,7 @@ PlasmaCore.Dialog {
                                     radius: height / 2
                                     color: isActive
                                            ? Kirigami.Theme.highlightColor
-                                           : (pillSouris.containsMouse                                       // 2.0 : survol bleu comme Fenestra Search
+                                           : (pillSouris.containsMouse                                       // 2.0: blue hover like Fenestra Search
                                               ? colorWithAlpha(Kirigami.Theme.highlightColor, 0.23)
                                               : colorWithAlpha(Kirigami.Theme.textColor, 0.08))
                                     border.width: isActive ? 0 : 1
@@ -2734,7 +2704,7 @@ PlasmaCore.Dialog {
                                     color: isActive
                                            ? "white"
                                            : colorWithAlpha(Kirigami.Theme.textColor, 0.75)
-                                    font.pointSize: Kirigami.Theme.defaultFont.pointSize   // 2.0 : texte des capsules à la taille du texte des résultats
+                                    font.pointSize: Kirigami.Theme.defaultFont.pointSize   // 2.0: capsule text at the size of the results text
                                     font.bold: isActive
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
@@ -2997,7 +2967,7 @@ PlasmaCore.Dialog {
                     font.pointSize: Kirigami.Theme.defaultFont.pointSize * 0.72
                 }
 
-                // Fenestra : hauteur des lignes de Fenestra Search (titre + 1 px + sous-titre, + 12 px)
+                // Fenestra: row height of Fenestra Search (title + 1 px + subtitle, + 12 px)
                 FontMetrics { id: mesureTitre; font.pixelSize: Kirigami.Theme.defaultFont.pixelSize }
                 FontMetrics { id: mesurePetit; font: Kirigami.Theme.smallFont }
 
@@ -3012,13 +2982,13 @@ PlasmaCore.Dialog {
                     anchors.bottomMargin: pluginResultsColumn.visible ? Kirigami.Units.smallSpacing : 0
                     visible: !(root.searching && searchField.text.startsWith('/'))
                     itemColumns: 3
-                    cellWidth: runnerGrid.availableWidth   // Fenestra : largeur réelle (surlignement fermé à droite)
-                    cellHeight: Math.ceil(Math.max(22, mesureTitre.height + 1 + mesurePetit.height) + 12) + 4   // Fenestra : comme Search
+                    cellWidth: runnerGrid.availableWidth   // Fenestra: real width (highlight closed on the right)
+                    cellHeight: Math.ceil(Math.max(22, mesureTitre.height + 1 + mesurePetit.height) + 12) + 4   // Fenestra: like Search
                     model: runnerModel
                     grabFocus: true
                     // Fenestra : web search as the last line of the list, as in Fenestra Search
                     pied: (root.searching && !searchField.text.startsWith('/') && !searchField.text.startsWith('>')
-                           && rootItem.pluginResults.length > 0) ? piedWeb : null   // 2.0 : aussi sans résultat
+                           && rootItem.pluginResults.length > 0) ? piedWeb : null   // 2.0: also with no results
                     focus: view.currentIndex === 1
                     onKeyNavUp: {
                         runnerGrid.focus = false;
@@ -3032,14 +3002,14 @@ PlasmaCore.Dialog {
                     Column {
                         width: parent ? parent.width : 0
                         readonly property var res: rootItem.pluginResults.length > 0 ? rootItem.pluginResults[0] : null
-                        property bool replie: false   // Fenestra : rubrique web repliée
+                        property bool replie: false   // Fenestra: web section collapsed
 
-                        // en-tête de rubrique « Recherche web », au dessin des autres rubriques
+                        // section header "Web search", drawn like the other sections
                         Item {
                             width: parent.width
                             height: titreWeb.implicitHeight + Kirigami.Units.smallSpacing * 3
 
-                            Rectangle {   // trait de couleur à gauche
+                            Rectangle {   // colored line on the left
                                 id: traitWeb
                                 anchors.left: parent.left
                                 anchors.leftMargin: Kirigami.Units.smallSpacing
@@ -3065,10 +3035,10 @@ PlasmaCore.Dialog {
                                 opacity: 0.75
                                 elide: Text.ElideRight
                             }
-                            Kirigami.Icon {   // flèche pour replier la rubrique
+                            Kirigami.Icon {   // arrow to collapse the section
                                 id: flecheWeb
                                 anchors.right: parent.right
-                                anchors.rightMargin: Kirigami.Units.smallSpacing   // 2.0 : flèche en face de la roue dentée
+                                anchors.rightMargin: Kirigami.Units.smallSpacing   // 2.0: arrow aligned with the gear
                                 anchors.verticalCenter: titreWeb.verticalCenter
                                 width: Kirigami.Units.iconSizes.small
                                 height: width
@@ -3076,7 +3046,7 @@ PlasmaCore.Dialog {
                                 opacity: enteteWebSouris.containsMouse ? 0.9 : 0.45
                                 Behavior on opacity { NumberAnimation { duration: 100 } }
                             }
-                            Rectangle {   // trait de séparation
+                            Rectangle {   // separator line
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.leftMargin: Kirigami.Units.smallSpacing
@@ -3094,23 +3064,23 @@ PlasmaCore.Dialog {
                                 onClicked: replie = !replie
                             }
                         }
-                        Item {   // espace sous l'en-tête, comme les autres rubriques
+                        Item {   // space under the header, like the other sections
                             width: parent.width
                             height: Kirigami.Units.smallSpacing
                             visible: !replie
                         }
 
-                        // ligne « Rechercher « x » sur <moteur> »
+                        // row "Search for "x" on <engine>"
                         Item {
-                            visible: !replie   // Fenestra : rubrique repliable
+                            visible: !replie   // Fenestra: collapsible section
                             width: parent.width
-                            height: runnerGrid.cellHeight   // Fenestra : même hauteur que les autres résultats
+                            height: runnerGrid.cellHeight   // Fenestra: same height as the other results
 
                             Rectangle {
                                 anchors.fill: parent
-                                anchors.topMargin: 2   // Fenestra : aligné sur les autres lignes
+                                anchors.topMargin: 2   // Fenestra: aligned with the other rows
                                 anchors.bottomMargin: 2
-                                radius: 5   // 2.0 : même survol partout
+                                radius: 5   // 2.0: same hover everywhere
                                 color: piedWebSouris.containsMouse
                                        ? (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff")
                                        : "transparent"
@@ -3272,13 +3242,13 @@ PlasmaCore.Dialog {
                 Column {
                     anchors.centerIn: parent
                     id: etatVide
-                    property bool pretAAfficher: false   // 2.0 : « Aucun résultat » attend un instant les résultats
+                    property bool pretAAfficher: false   // 2.0: "No results" waits a moment for the results
                     opacity: pretAAfficher ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: 100 } }
                     Timer { id: delaiVide; interval: 300; onTriggered: etatVide.pretAAfficher = true }
                     Connections { target: searchField; function onTextChanged() { etatVide.pretAAfficher = false; delaiVide.restart(); } }
                     visible: root.searching && !searchField.text.startsWith('/') && runnerGrid.nbResultats === 0   // Fenestra : real results
-                             && (searchField.text.startsWith('>') || rootItem.pluginResults.length === 0)   // 2.0 : sans résultat local, la recherche web prend la place du message
+                             && (searchField.text.startsWith('>') || rootItem.pluginResults.length === 0)   // 2.0: with no local result, the web search takes the place of the message
                     spacing: Kirigami.Units.largeSpacing
 
                     Kirigami.Icon {
@@ -3336,7 +3306,7 @@ PlasmaCore.Dialog {
                 }
             }
 
-            // PAGE 4 (index 2) — Nos recommandations (page complète : les 7 derniers jours)
+            // PAGE 4 (index 2) — Our recommendations (full page: the last 7 days)
             Item {
                 id: recentPage
                 width: view.width
@@ -3375,15 +3345,15 @@ PlasmaCore.Dialog {
 
                 ItemGridView {
                     id: recentAllGrid
-                    whiteHighlight: true // surlignement blanc 50 %
-                    // le surlignement s'arrête juste après l'heure (pas au bord du menu)
-                    highlightRightPad: Math.max(0, timeRightPad - (rootItem.listIconPad + 2))   // 2.0 : même écart à droite de l'heure qu'à gauche de l'icône
+                    whiteHighlight: true // white 50% highlight
+                    // the highlight stops right after the time (not at the menu's edge)
+                    highlightRightPad: Math.max(0, timeRightPad - (rootItem.listIconPad + 2))   // 2.0: same gap to the right of the time as to the left of the icon
                     onContentYChanged: rootItem.noteScrolling()
                     x: Math.max(0, rootItem.sectionInset - rootItem.listIconPad)
                     y: recentPageHeader.height + Kirigami.Units.largeSpacing
                     width: recentPage.width - x
                     height: recentPage.height - y
-                    // l'heure s'arrête au même bord droit que les boutons de section
+                    // the time stops at the same right edge as the section buttons
                     property int timeRightPad: Math.max(0, x + width - (rootItem.width - rootItem.margeCote * 2 - rootItem.sectionInset))
                     model: docsWeekModel
                     recentDocsMode: true
@@ -3418,8 +3388,8 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Fenêtre « Affichage » de la rubrique Tout (même style que la fenêtre du bouton Alimentation) ──
-        // fenêtre système séparée : le menu principal ne doit pas se refermer quand elle prend le focus
+        // ── "View" window of the All section (same style as the Power button window) ──
+        // separate system window: the main menu must not close when it takes focus
         PlasmaCore.Dialog {
             id: viewModePopup
             flags: Qt.WindowStaysOnTopHint
@@ -3436,7 +3406,7 @@ PlasmaCore.Dialog {
                     kdeConnectPanel.hold = false;
                     root.hideOnWindowDeactivate = !kdeConnectPanel.visible;
                     if (keepMenuOpen) {
-                        // choix fait dans cette fenêtre : le menu principal reste ouvert
+                        // choice made in this window: the main menu stays open
                         keepMenuOpen = false;
                         root.requestActivate();
                     } else if (!root.active && !kdeConnectPanel.active) {
@@ -3453,11 +3423,11 @@ PlasmaCore.Dialog {
             }
 
             function choose(mode) {
-                // Fenestra : affichage rapide : le petit menu se ferme d'abord, le changement suit
+                // Fenestra: quick view: the small menu closes first, the change follows
                 keepMenuOpen = true;
                 visible = false;
                 Qt.callLater(function () {
-                    if (mode !== 2) allAppsGrid.model = null;   // un seul recalcul de la grille
+                    if (mode !== 2) allAppsGrid.model = null;   // a single recomputation of the grid
                     Plasmoid.configuration.allAppsViewMode = mode;
                     if (mode === 2) root.ensureCategoryModel();
                     else rootItem.buildAllAppsCombo();
@@ -3466,7 +3436,7 @@ PlasmaCore.Dialog {
 
             function reposition() {
                 if (!anchorItem) return;
-                // sous le bouton, alignée sur son bord droit ; au-dessus s'il n'y a pas la place dans la hauteur du menu
+                // under the button, aligned on its right edge; above it if there is not enough room in the menu's height
                 var pos = anchorItem.mapToGlobal(anchorItem.width, anchorItem.height);
                 x = Math.round(pos.x - width);
                 var below = Math.round(pos.y + Kirigami.Units.smallSpacing);
@@ -3527,7 +3497,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Fenêtre d'une catégorie (clic sur le paquet de mini-icônes ou sur le fond d'une tuile) ──
+        // ── Window of a category (click on the mini-icon cluster or on a tile's background) ──
         Item {
             id: categoryFlyout
             anchors.fill: parent
@@ -3537,18 +3507,18 @@ PlasmaCore.Dialog {
             property int row: -1
             property string title: ""
 
-            property real progress: 0          // 0 = fermée, 1 = ouverte
+            property real progress: 0          // 0 = closed, 1 = open
             property bool closing: false
-            readonly property int revision: rootItem.categoryRevision   // reprend les nouveaux sous-modèles après un rafraîchissement
-            property real startScale: 0.7        // taille de départ (0.5 = petit, 0.9 = discret)
-            property real originX: width / 2     // point d'où la fenêtre sort (la tuile cliquée)
+            readonly property int revision: rootItem.categoryRevision   // picks up the new submodels after a refresh
+            property real startScale: 0.7        // starting size (0.5 = small, 0.9 = subtle)
+            property real originX: width / 2     // point the window emerges from (the clicked tile)
             property real originY: height / 2
 
-            // catégorie contenant une nouveauté : les cellules gagnent une ligne pour le tag
+            // category containing a novelty: the cells gain a row for the tag
             property bool hasNew: false
             readonly property real cellH: root.cellSizeHeight + (hasNew ? Kirigami.Units.gridUnit : 0)
 
-            ListModel { id: categoryFlatModel } // liste aplatie (plus de sous-tuiles de groupe)
+            ListModel { id: categoryFlatModel } // flattened list (no more group subtiles)
 
             function refreshHasNew() {
                 var found = false;
@@ -3591,7 +3561,7 @@ PlasmaCore.Dialog {
                 openAnim.restart();
             }
 
-            // fermeture animée (sens inverse de l'ouverture)
+            // animated closing (reverse of the opening)
             function close() {
                 if (!visible || closing) return;
                 closing = true;
@@ -3600,7 +3570,7 @@ PlasmaCore.Dialog {
             }
 
             onVisibleChanged: {
-                if (!visible) {           // fermeture immédiate (ex. le menu se ferme)
+                if (!visible) {           // immediate closing (e.g. the menu closes)
                     openAnim.stop();
                     closeAnim.stop();
                     progress = 0;
@@ -3657,7 +3627,7 @@ PlasmaCore.Dialog {
                 border.width: 1
                 border.color: root.colorWithAlpha(Kirigami.Theme.textColor, 0.15)
 
-                // un clic dans la fenêtre ne la ferme pas
+                // a click in the window does not close it
                 MouseArea {
                     anchors.fill: parent
                     onPressed: mouse => { mouse.accepted = true; }
@@ -3676,7 +3646,7 @@ PlasmaCore.Dialog {
 
                 ItemGridView {
                     id: flyGrid
-                    whiteHighlight: true // surlignement blanc 50 %
+                    whiteHighlight: true // white 50% highlight
                     onContentYChanged: rootItem.noteScrolling()
                     anchors.top: flyTitle.bottom
                     anchors.topMargin: Kirigami.Units.gridUnit
@@ -3687,7 +3657,7 @@ PlasmaCore.Dialog {
                     labels2lines: true
                     showNewTag: true
                     favoritesModelOverride: globalFavorites
-                    dragEnabled: false // liste fusionnée : la réorganisation n'a pas de sens ici
+                    dragEnabled: false // merged list: reordering makes no sense here
                     dropEnabled: false
                     verticalScrollBarPolicy: PC3.ScrollBar.AsNeeded
                     cellWidth: root.cellSizeWidth
@@ -3702,14 +3672,14 @@ PlasmaCore.Dialog {
         PlasmaExtras.PlasmoidHeading {
             id: footer
             contentWidth: parent.width
-            contentHeight: Kirigami.Units.gridUnit * 3 - 10   // pied réduit de 10 px (aligné sur le volet KDE Connect)
+            contentHeight: Kirigami.Units.gridUnit * 3 - 10   // footer reduced by 10 px (aligned with the KDE Connect panel)
             anchors.bottom: parent.bottom
             position: PC3.ToolBar.Footer
 
             Footer {
                 id: footerContent
                 anchors.fill: parent
-                // le menu se ferme -> les fenêtres Compte / Alimentation aussi
+                // the menu closes -> the Account / Power windows too
                 Connections {
                     target: root
                     function onVisibleChanged() { if (!root.visible) footerContent.closeMenus(); }
@@ -3721,10 +3691,10 @@ PlasmaCore.Dialog {
                 onPowerMenuClosed: {
                     kdeConnectPanel.hold = false;
                     root.hideOnWindowDeactivate = !kdeConnectPanel.visible;
-                    // Si le clic qui a fermé la fenêtre Alimentation était à
-                    // l'intérieur du menu principal, root redevient actif -
-                    // on le laisse ouvert. S'il était complètement en dehors
-                    // (le bureau), on ferme tout, comme sur Windows 11.
+                    // If the click that closed the Power window was
+                    // inside the main menu, root becomes active again -
+                    // we leave it open. If it was completely outside
+                    // (the desktop), we close everything, as on Windows 11.
                     if (!root.active && !kdeConnectPanel.active)
                         root.visible = false;
                 }
@@ -3763,7 +3733,7 @@ PlasmaCore.Dialog {
             }
         }
 
-        // ── Fenêtre de catégorie — activation dispatch (liste aplatie) ───────
+        // ── Category window — activation dispatch (flattened list) ───────
         Connections {
             target: flyGrid
             function onItemActivated(index, actionId, argument) {

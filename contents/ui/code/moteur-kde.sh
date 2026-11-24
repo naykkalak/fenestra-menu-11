@@ -1,8 +1,9 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 naykkalak
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Fenestra Search — moteur de recherche web choisi dans KDE
-# (Configuration système > Recherche web) : affiche Cle=, Name= et Query=
+# Fenestra Menu 11 — https://github.com/naykkalak/fenestra-menu-11
+# Web search engine chosen in KDE
+# (System Settings > Web Search Keywords): prints Cle=, Name= and Query=
 cle=$(kreadconfig6 --file kuriikwsfilterrc --group General --key DefaultWebShortcut 2>/dev/null)
 [ -z "$cle" ] && cle=duckduckgo
 echo "Cle=$cle"

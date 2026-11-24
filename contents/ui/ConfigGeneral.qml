@@ -54,7 +54,7 @@ KCM.SimpleKCM {
     property string cfg_icon: plasmoid.configuration.icon
     property bool cfg_useCustomButtonImage: plasmoid.configuration.useCustomButtonImage
     property string cfg_customButtonImage: plasmoid.configuration.customButtonImage
-    property alias cfg_numberColumns: numberColumns.value
+    property alias cfg_menuSize: menuSize.currentIndex
     property alias cfg_numberRows: numberRows.value
 
     property alias cfg_labels2lines: labels2lines.checked
@@ -62,7 +62,7 @@ KCM.SimpleKCM {
     property alias cfg_appsIconSize: appsIconSize.currentIndex
     property alias cfg_docsIconSize: docsIconSize.currentIndex
     property alias cfg_displayPosition: displayPosition.currentIndex
-    property alias cfg_kdeConnectMemoriser: kdeConnectMemoriserCb.checked   // Fenestra : option du volet
+    property alias cfg_kdeConnectMemoriser: kdeConnectMemoriserCb.checked   // Fenestra: panel option
     property alias cfg_showRecentDocs: showRecentDocsCb.checked
     property alias cfg_showRecentApps: showRecentAppsCb.checked
     property alias cfg_enableShellRunner: enableShellRunnerCb.checked
@@ -213,14 +213,14 @@ KCM.SimpleKCM {
             visible: true
         }
 
-        SpinBox{
-            id: numberColumns
-            enabled: false   // Fenestra : colonnes automatiques (6 / 7 / 8 selon l'écran)
-
-            from: 3
-            to: 15
-            Kirigami.FormData.label: i18n("Number of columns")
-
+        ComboBox {
+            id: menuSize
+            Kirigami.FormData.label: i18n("Menu size")
+            model: [
+                i18n("Automatic (default)"),
+                i18n("Small (6 columns)"),
+                i18n("Large (8 columns)"),
+            ]
         }
 
         SpinBox{
@@ -241,7 +241,7 @@ KCM.SimpleKCM {
             text: i18n("Show Recent Documents section")
         }
 
-        // Fenestra : option du volet : remplace « Default view mode » et « Default sort order » (grisés)
+        // Fenestra: panel option: replaces "Default view mode" and "Default sort order" (greyed out)
         Item {
             Kirigami.FormData.isSection: true
             Kirigami.FormData.label: i18n("KDE Connect")

@@ -1,9 +1,9 @@
 /*
- * Fenestra Search — https://github.com/naykkalak/fenestra-search
+ * Fenestra Menu 11 — https://github.com/naykkalak/fenestra-menu-11
  * SPDX-FileCopyrightText: 2026 naykkalak
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Moteurs de la recherche web. %s = texte cherché.
+ Web search engines. %s = searched text.
  */
 .pragma library
 
@@ -23,7 +23,7 @@ function trouver(cle) {
     return null;
 }
 
-// sortie du script moteur-kde.sh -> { nom, adresse } (DuckDuckGo si rien de lisible)
+// output of the moteur-kde.sh script -> { name, address } (DuckDuckGo if nothing readable)
 function depuisKde(sortie) {
     var cle = "", nom = "", requete = "";
     String(sortie || "").split("\n").forEach(function(l) {
@@ -35,7 +35,7 @@ function depuisKde(sortie) {
         return c === "gg" ? "google" : "duckduckgo";
     }));
     if (requete.indexOf("http") === 0) {
-        // KDE note l'emplacement du texte \\{@} ou \{0}... : on le remplace par %s
+        // KDE marks the text placeholder as \\{@} or \{0}...: we replace it with %s
         requete = requete.replace(/\\*\{[^}]*\}/, "%s");
         if (requete.indexOf("%s") !== -1)
             return { nom: nom || (connu ? connu.nom : cle), adresse: requete };

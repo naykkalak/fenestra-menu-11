@@ -23,13 +23,13 @@ Item {
 
     width: GridView.view.cellWidth
     height: GridView.view.cellHeight
-    clip: !isLetterHeader // le bandeau de la lettre déborde volontairement de la cellule
+    clip: !isLetterHeader // the letter banner deliberately overflows the cell
 
     enabled: !model.disabled
 
     property int iconSize
     property bool showLabel: true
-    // tag « Nouveauté » (activé seulement par la grille de la fenêtre de catégorie)
+    // "New" tag (enabled only by the category window's grid)
     property bool showNewTag: false
     readonly property bool isNewTag: showNewTag && !isFolderItem && !isIndented
                                      && favoriteId !== "" && typeof rootItem !== "undefined"
@@ -147,7 +147,7 @@ Item {
         width: item.GridView.view ? item.GridView.view.width : item.width
         height: item.height
         radius: 0
-        color: "transparent" // juste un repère de largeur/position, pas de fond visible
+        color: "transparent" // just a width/position reference, no visible background
     }
 
     Text {
@@ -192,7 +192,7 @@ Item {
         textFormat: Text.PlainText
     }
 
-    // Tag « Nouveauté » sous le nom de l'appli
+    // "New" tag under the app name
     Text {
         id: newTag
         visible: item.isNewTag
@@ -205,7 +205,7 @@ Item {
         font.weight: Font.DemiBold
     }
 
-    // infobulle compacte (PC3.ToolTip), comme « Marche/Arrêt »
+    // compact tooltip (PC3.ToolTip), like "Shut down"
     Item {
         id: toolTip
 

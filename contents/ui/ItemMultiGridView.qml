@@ -23,29 +23,29 @@ import org.kde.plasma.plasmoid
 PlasmaComponents.ScrollView {
     id: itemMultiGrid
 
-    PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {   // Fenestra : barre façon Windows 11
+    PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {   // Fenestra: Windows 11 style bar
         id: barreFenestra
-        parent: itemMultiGrid   // Fenestra : placement dans la ScrollView
+        parent: itemMultiGrid   // Fenestra: placement in the ScrollView
         x: itemMultiGrid.mirrored ? 0 : itemMultiGrid.width - width
         y: itemMultiGrid.topPadding
         height: itemMultiGrid.availableHeight
-        implicitWidth: 14   // largeur d'origine de la barre du thème
+        implicitWidth: 14   // original width of the theme's bar
         hoverEnabled: true
         visible: size < 1.0 && policy !== PlasmaComponents.ScrollBar.AlwaysOff
         readonly property bool survol: hovered || pressed
         readonly property bool eveille: active || extinction.running
-        function reveil() { extinction.restart(); }   // appelée quand la souris bouge
+        function reveil() { extinction.restart(); }   // called when the mouse moves
         Timer { id: extinction; interval: 1500 }
-        background: KSvg.FrameSvgItem {   // survol : fond du thème
+        background: KSvg.FrameSvgItem {   // hover: theme background
             imagePath: "widgets/scrollbar"
             prefix: "background-vertical"
-            transform: Translate { x: 4 }   // Fenestra : collé au bord, comme Windows
+            transform: Translate { x: 4 }   // Fenestra: stuck to the edge, like Windows
             opacity: barreFenestra.survol ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 150 } }
         }
         contentItem: Item {
             implicitWidth: 14
-            Rectangle {   // souris qui bouge : trait fin côté bord
+            Rectangle {   // mouse moving: thin line on the edge side
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
@@ -57,11 +57,11 @@ PlasmaComponents.ScrollView {
                 opacity: (barreFenestra.eveille && !barreFenestra.survol) ? 0.55 : 0
                 Behavior on opacity { NumberAnimation { duration: 150 } }
             }
-            KSvg.FrameSvgItem {   // survol / glissement : poignée du thème
+            KSvg.FrameSvgItem {   // hover / drag: theme handle
                 anchors.fill: parent
                 imagePath: "widgets/scrollbar"
                 prefix: "mouseover-slider"
-                transform: Translate { x: 4 }   // Fenestra : collé au bord, comme Windows
+                transform: Translate { x: 4 }   // Fenestra: stuck to the edge, like Windows
                 opacity: barreFenestra.survol ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 150 } }
             }
@@ -145,12 +145,12 @@ PlasmaComponents.ScrollView {
         flickableDirection: Flickable.VerticalFlick
         contentHeight: itemColumn.implicitHeight
         contentWidth: width
-        HoverHandler { onPointChanged: barreFenestra.reveil() }   // Fenestra : réveil de la barre
+        HoverHandler { onPointChanged: barreFenestra.reveil() }   // Fenestra: wakes the bar
 
         Column {
             id: itemColumn
 
-            width: flickable.width - (barreFenestra.visible ? 0 : barreFenestra.implicitWidth)   // 2.0 : même marge à droite avec ou sans barre
+            width: flickable.width - (barreFenestra.visible ? 0 : barreFenestra.implicitWidth)   // 2.0: same right margin with or without the bar
 
             Repeater {
                 id: repeater
@@ -236,7 +236,7 @@ PlasmaComponents.ScrollView {
                             Kirigami.Icon {
                                 id: collapseChevron
                                 anchors.right: parent.right
-                                anchors.rightMargin: Kirigami.Units.smallSpacing   // 2.0 : flèche en face de la roue dentée
+                                anchors.rightMargin: Kirigami.Units.smallSpacing   // 2.0: arrow aligned with the gear
                                 anchors.verticalCenter: categoryLabel.verticalCenter
                                 width: Kirigami.Units.iconSizes.small
                                 height: width
@@ -278,7 +278,7 @@ PlasmaComponents.ScrollView {
                             id: gridView
                             visible: !itemTest.sectionCollapsed
                             molettePropre: false   // Fenestra : the native scrolling of this view handles the wheel
-                            surlignageSearch: true   // Fenestra : surlignement de Fenestra Search
+                            surlignageSearch: true   // Fenestra: Fenestra Search highlight
 
                             Connections {
                                 target: gridView
@@ -333,7 +333,7 @@ PlasmaComponents.ScrollView {
 
                             cellWidth: itemMultiGrid.cellWidth
                             cellHeight: itemMultiGrid.cellHeight
-                            iconSize: 22   // Fenestra : icônes de Fenestra Search
+                            iconSize: 22   // Fenestra: Fenestra Search icons
 
                             verticalScrollBarPolicy: PlasmaComponents.ScrollBar.AlwaysOff
                             bypassArrowNav: true
@@ -362,7 +362,7 @@ PlasmaComponents.ScrollView {
                                     return;
                                 }
 
-                                // 2.0 : le survol à la souris ne fait pas défiler la liste : seulement la navigation au clavier
+                                // 2.0: mouse hover does not scroll the list: only keyboard navigation does
                                 if (typeof rootItem !== "undefined" && !rootItem.keyNavRecently()) {
                                     return;
                                 }
@@ -406,9 +406,9 @@ PlasmaComponents.ScrollView {
         Kicker.WheelInterceptor {
             width: flickable.width
             height: flickable.height
-            y: flickable.contentY   // Fenestra : reste sur la partie visible de la liste
+            y: flickable.contentY   // Fenestra: stays on the visible part of the list
             z: 1
-            destination: flickable   // Fenestra : la molette fait défiler la liste
+            destination: flickable   // Fenestra: the wheel scrolls the list
         }
     }
 }

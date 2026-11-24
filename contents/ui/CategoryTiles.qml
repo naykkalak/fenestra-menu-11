@@ -5,34 +5,38 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 /*
-    Vue « Catégories » façon Windows 11 : une tuile par catégorie du menu KDE.
-      - jusqu'à 4 applis : 4 grosses icônes ;
-      - plus de 4 : les 3 applis lancées le plus récemment en grosses icônes (un clic les lance)
-        + un paquet de 4 mini-icônes qui ouvre la fenêtre de la catégorie.
-    Un clic sur le fond de la tuile ouvre aussi la fenêtre de la catégorie.
+    "Categories" view, Windows 11 style: one tile per KDE menu category.
+      - up to 4 apps: 4 large icons;
+      - more than 4: the 3 most recently launched apps as large icons (one click launches them)
+        + a cluster of 4 mini icons that opens the category window.
+    A click on the tile background also opens the category window.
 */
 
 import QtQuick
 
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
-import org.kde.plasma.components as PC3   // infobulle compacte (PC3.ToolTip)
+import org.kde.plasma.components as PC3   // compact tooltip (PC3.ToolTip)
 import "code/tools.js" as Tools
 
 Item {
     id: tiles
 
-    // modèle des catégories (Kicker.RootModel non plat) ; renseigné par MenuRepresentation (setCategoryModel)
+    // category model (non-flat Kicker.RootModel); set by MenuRepresentation (setCategoryModel)
     property var model: null
-    // vrai tant que la fenêtre de catégorie est affichée (le survol des tuiles est alors coupé)
+    // true while the category window is shown (tile hover is then disabled)
     property bool flyoutOpen: false
-    // change à chaque rafraîchissement du catalogue : les tuiles reprennent alors les nouveaux sous-modèles
+    // changes on every catalog refresh: the tiles then pick up the new submodels
     readonly property int revision: (typeof rootItem !== "undefined") ? rootItem.categoryRevision : 0
 
     readonly property int favoriteIdRole: Qt.UserRole + 3
-    readonly property int columnsCount: 4
-    readonly property real gap: Kirigami.Units.gridUnit
-    readonly property real tileWidth: Math.max(60, Math.floor((width - gap * (columnsCount - 1)) / columnsCount))
+    // 2.1: size mode (6 = Small, 7 = Auto, 8 = Large), set by MenuRepresentation
+    property int modeColumns: 7
+    readonly property int columnsCount: modeColumns === 6 ? 3 : 4
+    readonly property real gap: modeColumns === 7 ? Kirigami.Units.gridUnit : 23
+    // 2.1: a tile never grows beyond its size in automatic mode: in Large mode only the side margins grow
+    readonly property real tileWidthMax: modeColumns === 6 ? 149 : (modeColumns === 8 ? 154 : 143)
+    readonly property real tileWidth: Math.min(tileWidthMax, Math.max(60, Math.floor((width - gap * (columnsCount - 1)) / columnsCount)))
     readonly property real tileHeight: Math.round(tileWidth * 0.97)
     readonly property real labelHeight: Math.round(Kirigami.Units.gridUnit * 1.6)
 
@@ -41,7 +45,7 @@ Item {
     implicitHeight: flow.implicitHeight
     height: implicitHeight
 
-    // menu du clic droit sur une grosse icône (mêmes actions que dans la fenêtre de la catégorie)
+    // right-click menu on a large icon (same actions as in the category window)
     ActionMenu {
         id: tileActionMenu
         property var targetSub: null
@@ -56,7 +60,10 @@ Item {
 
     Flow {
         id: flow
-        width: tiles.width
+        // 2.1: the 4 tiles are centred; the extra width (Large mode) becomes side margin
+        width: Math.min(tiles.width, tiles.columnsCount * tiles.tileWidth + tiles.gap * (tiles.columnsCount - 1))
+        // 2.1: Large mode, the first tile stays under "All" and the free width goes to the right; Auto and Small stay centred
+        x: (tiles.width - width) > Kirigami.Units.gridUnit * 2 ? 0 : Math.round((tiles.width - width) / 2)
         spacing: tiles.gap
 
         Repeater {
@@ -86,7 +93,7 @@ Item {
                 height: tiles.tileHeight + tiles.labelHeight
                 visible: appCount > 0
 
-                // applis de la catégorie : dernière utilisation (dans ce menu) d'abord, puis ordre alphabétique
+                // apps of the category: most recently used (in this menu) first, then alphabetical order
                 function rebuild() {
                     var list = [];
                     if (sub && typeof rootItem !== "undefined") {
@@ -109,7 +116,7 @@ Item {
                     apps = list;
                 }
 
-                // centre de la tuile en coordonnées de la scène (point de depart de l animation)
+                // center of the tile in scene coordinates (starting point of the animation)
                 function center() { return tileBg.mapToItem(null, tileBg.width / 2, tileBg.height / 2); }
 
                 function openActions(app, item, x, y) {
@@ -178,12 +185,12 @@ Item {
 
                                 HoverHandler { id: cellHover; enabled: cell.app !== null || cell.isCluster }
 
-                                // survol d'une grosse icône ou du paquet de mini-icônes
+                                // hover on a large icon or on the mini-icon cluster
                                 Rectangle {
                                     anchors.fill: parent
                                     anchors.margins: 2
                                     radius: 5
-                                    color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // surlignement-tuiles-v1
+                                    color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#26ffffff" : "#80ffffff") // tiles-highlight-v1
                                     border.width: 1
                                     border.color: (Kirigami.Theme.textColor.hslLightness > 0.5 ? "#1affffff" : "#14000000")
                                     visible: cell.app !== null || cell.isCluster
@@ -235,7 +242,7 @@ Item {
                                     }
                                 }
 
-                                // infobulle compacte (PC3.ToolTip), comme « Marche/Arrêt »
+                                // compact tooltip (PC3.ToolTip), like "Shut down"
                                 Item {
                                     anchors.fill: parent
                                     HoverHandler { id: cellTipHover }
@@ -250,7 +257,7 @@ Item {
                 }
 
                 Rectangle {
-                    // point « nouveau » : la catégorie contient une application récemment installée
+                    // "new" dot: the category contains a recently installed application
                     visible: cat.hasNew
                     z: 5
                     width: Kirigami.Units.smallSpacing * 2 + 2
