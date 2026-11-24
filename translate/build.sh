@@ -1,5 +1,7 @@
 #!/bin/sh
 # Fenestra Menu 11 — compile the translations (needs gettext: msgfmt)
+# SPDX-FileCopyrightText: 2026 naykkalak
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Run from this folder:  sh build.sh
 set -e
 cd "$(dirname "$0")"

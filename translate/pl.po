@@ -1,9 +1,10 @@
 # Fenestra Menu 11 — Polish translation
+# SPDX-FileCopyrightText: 2026 naykkalak
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Machine-assisted translation — to be reviewed by a native speaker.
 msgid ""
 msgstr ""
-"Project-Id-Version: Fenestra Menu 11 1.0\n"
+"Project-Id-Version: Fenestra Menu 11 2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/naykkalak/fenestra-menu-11/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -861,3 +862,23 @@ msgstr "Wyszukiwanie w sieci"
 
 msgid "Search “%1” on %2"
 msgstr "Szukaj „%1” w %2"
+
+#: contents/ui/KdeConnectPanel.qml
+msgid "Configure Fenestra Menu 11"
+msgstr "Skonfiguruj Fenestra Menu 11"
+
+#: contents/ui/ConfigGeneral.qml
+msgid "Menu size"
+msgstr "Rozmiar menu"
+
+#: contents/ui/ConfigGeneral.qml
+msgid "Automatic (default)"
+msgstr "Automatycznie (domyślnie)"
+
+#: contents/ui/ConfigGeneral.qml
+msgid "Small (6 columns)"
+msgstr "Mały (6 kolumn)"
+
+#: contents/ui/ConfigGeneral.qml
+msgid "Large (8 columns)"
+msgstr "Duży (8 kolumn)"

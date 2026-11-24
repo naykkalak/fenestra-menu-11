@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.1
+
+### Added
+- "Configure Fenestra Menu 11" line in the "···" menu of the KDE Connect panel, to open the menu settings directly.
+- Menu size setting, like in Windows 11: Automatic (default, according to the screen), Small (6 columns) or Large (8 columns).
+
+### Changed
+- Rounded corners on all four sides of the menu and of the KDE Connect panel. The small gap above the panel stays, as in Windows 11.
+- The Settings button of the search now opens the file search settings, like in Fenestra Search.
+- The "Sign out" button of the account window is highlighted like the power menu entries.
+- Category tiles adapt to the menu size: 3 tiles per row in Small, 4 in Automatic and Large.
+- Code comments translated from French to English.
+
+### Fixed
+- The menu is no longer cut off at the top of the screen on small screens with display scaling (for example 125 %).
+
+### Tested
+Menu 11 was tested, in light and dark mode, on:
+- Fedora
+- Kubuntu
+- openSUSE
+- Manjaro
+
 ## 2.0
 
 ### Added

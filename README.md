@@ -11,7 +11,7 @@ Part of the Fenestra series.
 
 It brings your pinned and recommended apps, all your apps in three views, a search inspired by Windows 11 and, next to the menu, a panel to control your phone through KDE Connect. It is designed in particular for people coming from Windows, so they don't feel lost on a KDE Plasma desktop.
 
-<p align="center"><img src="docs/fenestra-menu-11.png" width="800" alt="Fenestra Menu 11"></p>
+<p align="center"><img src="docs/fenestra-menu-11.png" width="640" alt="Fenestra Menu 11"></p>
 
 > Fenestra Menu 11 is a fork of [Menu 11 Next](https://github.com/Eisteed/menu-11-next) by Eisteed, reworked in depth. See [Credits](#credits).
 
@@ -21,7 +21,7 @@ It brings your pinned and recommended apps, all your apps in three views, a sear
 
 - **Pinned** apps, with folders, and a **Recommended** section (recent documents and apps).
 - **All apps** in three views: **List**, **Grid** or **Categories** (one tile per category), switchable from the menu.
-- Menu width adapts to the screen: 6, 7 or 8 columns (below 1900 px, 1900–2499 px, 2500 px and above). The window keeps a fixed size, according to the number of icons displayed.
+- Menu width adapts to the screen: 6, 7 or 8 columns (below 1900 px, 1900–2499 px, 2500 px and above). The window keeps a fixed size, according to the number of icons displayed. In the settings you can also choose **Small** (6 columns) or **Large** (8 columns), like in Windows 11; the default is **Automatic**.
 - **Search** for apps, files, settings and actions, with filters, a built-in calculator (`/calc`) and `Alt+1–9` to launch a result. A back arrow returns to the first page.
 - **Web search** as the last line of the results, with the engine chosen in KDE settings; without any local result, it goes straight to the web search. A **Settings** button next to the filters opens the KDE search settings (to switch from Google to DuckDuckGo, for example).
 - Optional shell command runner (`> command`) and optional quick actions bar (screenshot, lock, terminal…).
@@ -77,8 +77,9 @@ Translations other than French are machine-assisted and **should be reviewed by 
 - **Icons**
   - KDE Connect panel pictograms (`contents/icons/kdeconnect/`), search back arrow and settings gear (`contents/icons/fluent/`): [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons), © Microsoft Corporation, MIT License (license file included).
   - Power button and power menu icons (`contents/icons/status/system-*-v2.svg`): [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons), © Microsoft Corporation, MIT License.
-  - KDE Connect button (`contents/icons/status/kdeconnect.svg`): from the [KDE-Windows-Modern](https://github.com/Jeysef/KDE-Windows-Modern) icon theme by Jeysef, GPL-3.0.
-  - Phone battery and mute icons (`contents/icons/status/`): original creations for Fenestra.
+  - KDE Connect button (`contents/icons/status/fenestra-kdeconnect.svg`): from the [KDE-Windows-Modern](https://github.com/Jeysef/KDE-Windows-Modern) icon theme by Jeysef, GPL-3.0.
+  - Phone battery icons (`contents/icons/status/phone-battery-*.svg`): original creations for Fenestra.
+  - Mute icon (`contents/icons/status/phone-audio-volume-muted.svg`): based on the speaker icon of [Phosphor Icons](https://github.com/phosphor-icons/core), © Phosphor Icons, MIT License (license file included), modified.
 
 ## Also in the Fenestra series
 
@@ -90,7 +91,7 @@ Translations other than French are machine-assisted and **should be reviewed by 
 
 ## License
 
-Fenestra Menu 11 is distributed under the **GNU General Public License v3.0 or later** (see [LICENSE](LICENSE)).
+© 2026 naykkalak. Fenestra Menu 11 is distributed under the **GNU General Public License v3.0 or later** (see [LICENSE](LICENSE)).
 Files inherited from Menu 11 Next and KDE keep their original GPL-2.0-or-later notices, a license that allows this redistribution under GPL-3.0-or-later.
 
 *Not affiliated with or endorsed by Microsoft. “Windows” is a trademark of Microsoft Corporation and is only used here to describe the style.*
