@@ -34,6 +34,7 @@ import org.kde.plasma.components as PC3
 import org.kde.plasma.private.kicker 0.1 as Kicker
 import org.kde.kirigami as Kirigami
 import org.kde.ksvg as KSvg
+import org.kde.plasma.plasma5support as Plasma5Support
 
 PlasmoidItem {
 
@@ -274,6 +275,17 @@ PlasmoidItem {
         kicker.hideOnWindowDeactivate = true;
 
         dragHelper.dropped.connect(resetDragSource);
+
+        // 2.1.1: record the widget in the KDE Store list so that Discover offers its updates
+        storeRegistry.connectSource(storeRegistry.commande);
+    }
+
+    // 2.1.1: runs store_registry.py once at start (nothing is written if the entry is up to date)
+    Plasma5Support.DataSource {
+        id: storeRegistry
+        engine: "executable"
+        readonly property string commande: "python3 '" + String(Qt.resolvedUrl("code/store_registry.py")).replace("file://", "") + "' add"
+        onNewData: (source, donnees) => disconnectSource(source)
     }
 
     // "About" (1.2), opened from the "···" of the KDE Connect panel

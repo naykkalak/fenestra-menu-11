@@ -49,15 +49,9 @@ PlasmaCore.Dialog {
 
     objectName: "popupWindow"
     flags: Qt.WindowStaysOnTopHint
-    // 2.1: four rounded corners: a menu placed at the bottom = a "floating" window (its position is computed separately)
-    location: {
-        if (Plasmoid.configuration.displayPosition === 1 || Plasmoid.configuration.displayPosition === 2)
-            return PlasmaCore.Types.Floating;
-        else if (Plasmoid.location === PlasmaCore.Types.BottomEdge)
-            return PlasmaCore.Types.Floating;
-        else
-            return Plasmoid.location;
-    }
+    // 2.1.1: attached to the edge of the bar (KWin slides it in and out) + floating (four rounded corners)
+    location: (Plasmoid.location === PlasmaCore.Types.BottomEdge || Plasmoid.location === PlasmaCore.Types.TopEdge || Plasmoid.location === PlasmaCore.Types.LeftEdge || Plasmoid.location === PlasmaCore.Types.RightEdge) ? Plasmoid.location : PlasmaCore.Types.Floating
+    floating: 1
     hideOnWindowDeactivate: true
 
     // Ensure minimum dimensions to prevent empty dialog error

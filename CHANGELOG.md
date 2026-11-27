@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.1
+
+### Fixed
+- Updates now go through Discover: new versions of Fenestra Menu 11 are offered by Discover, with your other updates. On distributions without Discover, such as Manjaro, updates are still done manually.
+
+### Changed
+- Improved movement of the menu and of the KDE Connect panel when they open and close.
+- More readable blue, in light and dark mode, for the links of the account and power windows and for the buttons of the KDE Connect panel.
+
 ## 2.1
 
 ### Added
@@ -15,6 +24,9 @@
 
 ### Fixed
 - The menu is no longer cut off at the top of the screen on small screens with display scaling (for example 125 %).
+
+### Languages
+- 14 languages: English, French, German, Spanish, Italian, Portuguese (Portugal), Portuguese (Brazil), Dutch, Polish, Russian, Turkish, Japanese, Simplified Chinese and Traditional Chinese. The menu follows the language of your system and falls back to English.
 
 ### Tested
 Menu 11 was tested, in light and dark mode, on:

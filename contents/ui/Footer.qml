@@ -555,7 +555,7 @@ RowLayout{
                             id: manageLink
                             text: i18n("Manage my account")
                             // Fenestra blue in light theme, Plasma link colour in dark theme
-                            color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#003E92" : Kirigami.Theme.linkColor
+                            color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#0055A4" : Kirigami.Theme.linkColor
                             font.family: Kirigami.Theme.defaultFont.family
                             font.pointSize: Kirigami.Theme.defaultFont.pointSize || 10
                             font.underline: manageMouse.containsMouse

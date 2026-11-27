@@ -35,8 +35,9 @@ PlasmaCore.Dialog {
     property var menuWindow: null
 
     flags: Qt.WindowStaysOnTopHint
-    // 2.1: like the menu, a "floating" window: four rounded corners
-    location: PlasmaCore.Types.Floating
+    // 2.1.1: attached to the edge of the bar (KWin slides it in and out) + floating (four rounded corners)
+    location: (Plasmoid.location === PlasmaCore.Types.BottomEdge || Plasmoid.location === PlasmaCore.Types.TopEdge || Plasmoid.location === PlasmaCore.Types.LeftEdge || Plasmoid.location === PlasmaCore.Types.RightEdge) ? Plasmoid.location : PlasmaCore.Types.Floating
+    floating: 1
     hideOnWindowDeactivate: false
     visible: false
 
@@ -1493,14 +1494,14 @@ PlasmaCore.Dialog {
                     Rectangle {   // elapsed part
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width * barre.ratio; height: 3; radius: 1.5
-                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#0055A4" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
+                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#006CE0" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
                     }
                     Rectangle {   // cursor (on hover, if the position can be changed)
                         visible: barreMouse.containsMouse && panel.dev && panel.dev.mSeek
                         width: 10; height: 10; radius: 5
                         anchors.verticalCenter: parent.verticalCenter
                         x: parent.width * barre.ratio - width / 2
-                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#0055A4" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
+                        color: Kirigami.Theme.backgroundColor.hslLightness > 0.5 ? "#006CE0" : Kirigami.Theme.highlightColor   // Fenestra blue (light theme)
                         border.width: 2
                         border.color: "#ffffff"
                     }

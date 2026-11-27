@@ -25,7 +25,7 @@
         "Id": "org.fenestra.menu11",
         "License": "GPL-3.0+",
         "Name": "Fenestra Menu 11",
-        "Version": "2.1",
+        "Version": "2.1.1",
         "Website": "https://github.com/naykkalak/fenestra-menu-11"
     },
     "X-Plasma-API-Minimum-Version": "6.0",
